@@ -37,9 +37,9 @@ create or replace temporary view events as
 			first(_count)
 			FOR status IN (
 				'CON016',
-				'RECRN001A', 'RECRN002A', 'RECRN003A', 'RECRN004A', 'RECRN005A', 'RECRN001C', 'RECRN002C', 'RECRN003C', 'RECRN004C', 'RECRN005C', 'RECRN002D', 'RECRN002F', 'RECRN006', 'RECRN010', 'RECRN013',
-				'RECAG001A', 'RECAG002A', 'RECAG003A', 'RECAG005A', 'RECAG006A', 'RECAG007A', 'RECAG008A', 'RECAG001C', 'RECAG002C', 'RECAG003C', 'RECAG005C', 'RECAG006C', 'RECAG007C', 'RECAG008C', 'RECAG003D', 'RECAG003F', 'RECAG004', 'RECAG010', 'RECAG013',
-				'RECRS002A', 'RECRS004A', 'RECRS005A', 'RECRS001C', 'RECRS002C', 'RECRS003C', 'RECRS004C', 'RECRS005C', 'RECRS002D', 'RECRS002F', 'RECRS006', 'RECRS010', 'RECRS013'
+				'RECRN001A', 'RECRN002A', 'RECRN003A', 'RECRN004A', 'RECRN005A', 'RECRN001C', 'RECRN002C', 'RECRN003C', 'RECRN004C', 'RECRN005C', 'RECRN002D', 'RECRN002F', 'RECRN006', 'RECRN010', 'RECRN011', 'RECRN013',
+				'RECAG001A', 'RECAG002A', 'RECAG003A', 'RECAG005A', 'RECAG006A', 'RECAG007A', 'RECAG008A', 'RECAG001C', 'RECAG002C', 'RECAG003C', 'RECAG005C', 'RECAG006C', 'RECAG007C', 'RECAG008C', 'RECAG003D', 'RECAG003F', 'RECAG004', 'RECAG010', 'RECAG011A', 'RECAG013',
+				'RECRS002A', 'RECRS004A', 'RECRS005A', 'RECRS001C', 'RECRS002C', 'RECRS003C', 'RECRS004C', 'RECRS005C', 'RECRS002D', 'RECRS002F', 'RECRS006', 'RECRS010', 'RECRS011', 'RECRS013'
 			)
 		)
 	) SELECT * FROM events_pivoted
@@ -69,21 +69,24 @@ CREATE OR replace TEMPORARY VIEW product890 AS
 			COALESCE(e.RECAG003C, 0) / COALESCE(e.RECAG003A, 0) AS PercentualeDematMancatoRecapito,
 			COALESCE(e.RECAG003D, 0) AS Irreperibile,
 			COALESCE(e.RECAG003F, 0) / COALESCE(e.RECAG003D, 0) AS PercentualeDematIrreperibile,
-			COALESCE(e.RECAG010, 0) AS InviateInGiacenza,
+			COALESCE(e.RECAG010, 0) AS Inesito,
+			COALESCE(e.RECAG011A, 0) AS InGiacenza,
 			COALESCE(e.RECAG005A, 0) + COALESCE(e.RECAG005A, 0) AS ConsegnateInGiacenza,
 			(COALESCE(e.RECAG005C, 0) + COALESCE(e.RECAG006C, 0)) / (COALESCE(e.RECAG005A, 0) + COALESCE(e.RECAG006A, 0)) AS PercentualeDematConsegnateInGiacenza,
-			COALESCE(e.RECAG007A, 0) + COALESCE(e.RECAG008A, 0) AS MancataCompiutaGiacenza,
-			(COALESCE(e.RECAG007C, 0) + COALESCE(e.RECAG008C, 0)) / (COALESCE(e.RECAG007A, 0) + COALESCE(e.RECAG008A, 0)) AS PercentualeDematMancataCompiutaGiacenza,
+			COALESCE(e.RECAG007A, 0) AS MancataConsegnaInGiacenza,
+			COALESCE(e.RECAG007C, 0) / COALESCE(e.RECAG007A, 0) AS PercentualeDematMancataConsegnaInGiacenza,
+			COALESCE(e.RECAG008A, 0) AS CompiutaGiacenza,
+			COALESCE(e.RECAG008C, 0) / COALESCE(e.RECAG008A, 0) AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECAG004, 0) + COALESCE(e.RECAG013, 0) AS NonRendicontabili
 		FROM events e
 		WHERE e.product = "890"
 	), product890Kpis AS (
 		SELECT
 			p.*,
-			p.PreseInCarico - (p.Consegnate + p.MancatoRecapito + p.Irreperibile + p.InviateInGiacenza + p.NonRendicontabili) AS NonInviati
+			p.PreseInCarico - (p.Consegnate + p.MancatoRecapito + p.Irreperibile + p.Inesito + p.NonRendicontabili) AS NonInviati,
+			p.Inesito - (p.ConsegnateInGiacenza + p.MancataConsegnaInGiacenza + p.CompiutaGiacenza) AS GiacenzeInCorso
 		FROM product890PartialKpis p
-	)
-	SELECT * FROM product890Kpis
+	) SELECT * FROM product890Kpis
 ;
 
 /*
@@ -110,21 +113,24 @@ CREATE OR replace TEMPORARY VIEW productAR AS
 			COALESCE(e.RECRN002C, 0) / COALESCE(e.RECRN002A, 0) AS PercentualeDematMancatoRecapito,
 			COALESCE(e.RECRN002D, 0) AS Irreperibile,
 			COALESCE(e.RECRN002F, 0) / COALESCE(e.RECRN002D, 0) AS PercentualeDematIrreperibile,
-			COALESCE(e.RECRN010, 0) AS InviateInGiacenza,
+			COALESCE(e.RECRN010, 0) AS Inesito,
+			COALESCE(e.RECRN011, 0) AS InGiacenza,
 			COALESCE(e.RECRN003A, 0) AS ConsegnateInGiacenza,
 			COALESCE(e.RECRN003C, 0) / COALESCE(e.RECRN003A, 0) AS PercentualeDematConsegnateInGiacenza,
-			COALESCE(e.RECRN004A, 0) + COALESCE(e.RECRN005A, 0) AS MancataCompiutaGiacenza,
-			(COALESCE(e.RECRN004C, 0) + COALESCE(e.RECRN005C, 0)) / (COALESCE(e.RECRN004A, 0) + COALESCE(e.RECRN005A, 0)) AS PercentualeDematMancataCompiutaGiacenza,
+			COALESCE(e.RECRN004A, 0) AS MancataConsegnaInGiacenza,
+			COALESCE(e.RECRN004C, 0) / COALESCE(e.RECRN004A, 0) AS PercentualeDematMancataConsegnaInGiacenza,
+			COALESCE(e.RECRN005A, 0) AS CompiutaGiacenza,
+			COALESCE(e.RECRN005C, 0) / COALESCE(e.RECRN005A, 0) AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECRN006, 0) + COALESCE(e.RECRN013, 0) AS NonRendicontabili
 		FROM events e
 		WHERE e.product = "AR"
 	), productARKpis AS (
 		SELECT
 			p.*,
-			p.PreseInCarico - (p.Consegnate + p.MancatoRecapito + p.Irreperibile + p.InviateInGiacenza + p.NonRendicontabili) AS NonInviati
+			p.PreseInCarico - (p.Consegnate + p.MancatoRecapito + p.Irreperibile + p.Inesito + p.NonRendicontabili) AS NonInviati,
+			p.Inesito - (p.ConsegnateInGiacenza + p.MancataConsegnaInGiacenza + p.CompiutaGiacenza) AS GiacenzeInCorso
 		FROM productARPartialKpis p
-	)
-	SELECT * FROM productARKpis
+	) SELECT * FROM productARKpis
 ;
 
 /*
@@ -151,21 +157,24 @@ CREATE OR replace TEMPORARY VIEW productRS AS
 			COALESCE(e.RECRS002C, 0) / COALESCE(e.RECRS002A, 0) AS PercentualeDematMancatoRecapito,
 			COALESCE(e.RECRS002D, 0) AS Irreperibile,
 			COALESCE(e.RECRS002F, 0) / COALESCE(e.RECRS002D, 0) AS PercentualeDematIrreperibile,
-			COALESCE(e.RECRS010, 0) AS InviateInGiacenza,
+			COALESCE(e.RECRS010, 0) AS Inesito,
+			COALESCE(e.RECRS011, 0) AS InGiacenza,
 			COALESCE(e.RECRS003C, 0) AS ConsegnateInGiacenza,
 			"NA" AS PercentualeDematConsegnateInGiacenza,
-			COALESCE(e.RECRS004A, 0) + COALESCE(e.RECRS005A, 0) AS MancataCompiutaGiacenza,
-			(COALESCE(e.RECRS004C, 0) + COALESCE(e.RECRS005C, 0)) / (COALESCE(e.RECRS004A, 0) + COALESCE(e.RECRS005A, 0)) AS PercentualeDematMancataCompiutaGiacenza,
+			COALESCE(e.RECRS004A, 0) AS MancataConsegnaInGiacenza,
+			COALESCE(e.RECRS004C, 0) / COALESCE(e.RECRS004A, 0) AS PercentualeDematMancataConsegnaInGiacenza,
+			COALESCE(e.RECRS005A, 0) AS CompiutaGiacenza,
+			COALESCE(e.RECRS005C, 0) / COALESCE(e.RECRS005A, 0) AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECRS006, 0) + COALESCE(e.RECRS013, 0) AS NonRendicontabili
 		FROM events e
 		WHERE e.product = "RS"
 	), productRSKpis AS (
 		SELECT
 			p.*,
-			p.PreseInCarico - (p.Consegnate + p.MancatoRecapito + p.Irreperibile + p.InviateInGiacenza + p.NonRendicontabili) AS NonInviati
+			p.PreseInCarico - (p.Consegnate + p.MancatoRecapito + p.Irreperibile + p.Inesito + p.NonRendicontabili) AS NonInviati,
+			p.Inesito - (p.ConsegnateInGiacenza + p.MancataConsegnaInGiacenza + p.CompiutaGiacenza) AS GiacenzeInCorso
 		FROM productRSPartialKpis p
-	)
-	SELECT * FROM productRSKpis
+	) SELECT * FROM productRSKpis
 ;
 
 /*
