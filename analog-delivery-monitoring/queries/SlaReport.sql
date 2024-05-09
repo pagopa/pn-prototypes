@@ -77,7 +77,8 @@ WITH kpi AS (
 	      filter(c.ec_metadata.event_list,
 	      	e -> e.paperProg_statusCode in ( 'RECRS001C', 'RECRS002A','RECRS002D','RECRN001A','RECRN002A','RECRN002D','RECAG001A','RECAG002A','RECAG003A','RECAG003D',
 	       									 'RECRS010', 'RECNS010', 'RECAG010',
-	       									 'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013'
+	       									 'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013',
+													 'RECRSI001', 'RECRI001', 'RECRSI005', 'RECRI005'
 	       								)
 	      ),
 	      e -> named_struct(
@@ -88,7 +89,8 @@ WITH kpi AS (
 	    ),-1) as tentativo_recapito,
 	    element_at(transform(
 	      filter(c.ec_metadata.event_list,
-	      	e -> e.paperProg_statusCode in ( 'RECRS011', 'RECRN011', 'RECAG011A')
+	      	e -> e.paperProg_statusCode in ( 'RECRS011', 'RECRN011', 'RECAG011A',
+													 								'RECRSI002', 'RECRI002')
 	      ),
 	      e -> named_struct(
 	        'statusCode', e.paperProg_statusCode,
@@ -100,11 +102,13 @@ WITH kpi AS (
 	      filter(c.ec_metadata.event_list,
 	      	e -> e.paperProg_statusCode in ('RECRS001C','RECRS002A','RECRS002D','RECRN001A','RECRN002A','RECRN002D', 'RECAG001A','RECAG002A','RECAG003A','RECAG003D',
 	      									'RECRS003C','RECRS004A','RECRS005A','RECRN003A','RECRN004A','RECRN005A', 'RECAG005A','RECAG006A','RECAG007A','RECAG008A',
-	      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013'
+	      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013',
+													'RECRSI003C', 'RECRSI004A', 'RECRSI005', 'RECRI003A', 'RECRI004A', 'RECRI005'
 	      									)
 	      ),
 	      e -> named_struct(
 	        'statusCode', e.paperProg_statusCode,
+					'deliveryFailureCause', e.paperProg_deliveryFailureCause,
 	        'statusDateTime', left(e.paperProg_statusDateTime, 16),
 	        'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
 	      )
@@ -113,7 +117,8 @@ WITH kpi AS (
 	      filter(c.ec_metadata.event_list,
 	      	e -> e.paperProg_statusCode in ('RECRS001C','RECRS002C','RECRS002F','RECRN001C','RECRN002C','RECRN002F', 'RECAG001C','RECAG002C','RECAG003C','RECAG003F',
 	      									'RECRS003C','RECRS004C','RECRS005C','RECRN003C','RECRN004C','RECRN005C', 'RECAG005C','RECAG006C','RECAG007C','RECAG008C',
-	      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013'
+	      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013',
+													'RECRSI003C', 'RECRSI004C', 'RECRSI005', 'RECRI003C', 'RECRI004C', 'RECRI005'
 	      								    )
 	      ),
 	      e -> named_struct(
@@ -142,7 +147,7 @@ WITH kpi AS (
 	      )
 	    ),-1) as demat_23L
 	FROM complete_updated_ec_metadata c
-	WHERE c.ec_metadata.paperMeta_productType IN ('890', 'AR', 'RS' )
+	WHERE c.ec_metadata.paperMeta_productType IN ('890', 'AR', 'RS', 'RIS', 'RIR' )
 ) SELECT
 	ente_id,
 	iun,
@@ -171,6 +176,7 @@ WITH kpi AS (
 	from_utc_timestamp(messaingiacenza.statusDateTime, "CET") AS messaingiacenza_recapito_data,
 	from_utc_timestamp(messaingiacenza.rendicontazioneDateTime, "CET") AS messaingiacenza_recapito_data_rendicontazione,
 	certificazione_recapito.statusCode AS certificazione_recapito_stato,
+	certificazione_recapito.deliveryFailureCause AS certificazione_recapito_dettagli,
 	from_utc_timestamp(certificazione_recapito.statusDateTime, "CET") AS certificazione_recapito_data,
 	from_utc_timestamp(certificazione_recapito.rendicontazioneDateTime, "CET") AS certificazione_recapito_data_rendicontazione,
 	fine_recapito.statusCode AS fine_recapito_stato,
