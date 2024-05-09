@@ -1,0 +1,15 @@
+{
+  "name": "SLA Report",
+  "version": "1.0",
+  "outputFormat": "PARQUET",
+  "chron": "DAILY",
+  "partitions": 0,
+  "task": {
+    "name": "Build SLA Report",
+    "type": "SQL",
+    "script": {
+      "path": "analog-delivery-monitoring/queries/SlaReport.sql",
+      "entry": "SlaReport"
+    }
+  }
+}
