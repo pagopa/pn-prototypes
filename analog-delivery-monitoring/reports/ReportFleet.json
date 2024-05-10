@@ -1,0 +1,19 @@
+{
+  "reports": [
+    {
+      "name": "Shipper Reliability Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "chron": "DAILY",
+      "partitions": 1,
+      "task": {
+        "name": "Build Shipper Reliability Report",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/ShipperReliabilityReport.sql",
+          "entry": "ShipperReliabilityReport"
+        }
+      }
+    }
+  ]
+}
