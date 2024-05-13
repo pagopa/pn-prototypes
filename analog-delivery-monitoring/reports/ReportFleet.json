@@ -1,17 +1,32 @@
 {
   "reports": [
     {
-      "name": "Shipper Reliability Report",
+      "name": "Shipper Product Reliability Report",
       "version": "1.0",
       "outputFormat": "CSV",
       "chron": "DAILY",
       "partitions": 1,
       "task": {
-        "name": "Build Shipper Reliability Report",
+        "name": "Build Shipper Reliability Report Grouped By <shipper, product>",
         "type": "SQL",
         "script": {
-          "path": "analog-delivery-monitoring/queries/ShipperReliabilityReport.sql",
-          "entry": "ShipperReliabilityReport"
+          "path": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql",
+          "entry": "ShipperProductReliabilityReport"
+        }
+      }
+    },
+    {
+      "name": "Shipper Product Lot Reliability Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "chron": "DAILY",
+      "partitions": 1,
+      "task": {
+        "name": "Build Shipper Reliability Report Grouped By <shipper, product, lot>",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/ShipperProductLotReliabilityReport.sql",
+          "entry": "ShipperProductLotReliabilityReport"
         }
       }
     }

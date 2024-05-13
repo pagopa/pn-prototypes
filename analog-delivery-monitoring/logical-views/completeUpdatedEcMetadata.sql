@@ -85,7 +85,8 @@ create or replace temporary view complete_updated_ec_metadata as
         et.*,
         named_struct (
           'recapitista', c.recapitista,
-          'lotto', c.lotto
+          'lotto', c.lotto,
+          'geokey', c.geokey
         )
          as costi_recapito
       from

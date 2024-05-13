@@ -56,7 +56,7 @@ Here an example of report:
     "name": "Build Shipper Reliability Report",
     "type": "SQL",
     "script": {
-      "path": "analog-delivery-monitoring/queries/ShipperReliabilityReport.sql",
+      "path": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql",
       "entry": "ShipperReliabilityReport"
     }
   }
