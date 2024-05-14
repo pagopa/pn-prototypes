@@ -380,23 +380,23 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "product890",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "location": "analog-delivery-monitoring/queries/ShipperProductLotReliabilityReport.sql"
         },
         {
             "name": "productAR",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "location": "analog-delivery-monitoring/queries/ShipperProductLotReliabilityReport.sql"
         },
         {
             "name": "productRS",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "location": "analog-delivery-monitoring/queries/ShipperProductLotReliabilityReport.sql"
         },
         {
             "name": "productRIR",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "location": "analog-delivery-monitoring/queries/ShipperProductLotReliabilityReport.sql"
         },
         {
             "name": "productRIS",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "location": "analog-delivery-monitoring/queries/ShipperProductLotReliabilityReport.sql"
         }
     ]
 }
