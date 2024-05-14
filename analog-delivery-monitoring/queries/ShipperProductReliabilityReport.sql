@@ -86,7 +86,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
@@ -163,7 +163,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
@@ -239,7 +239,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
@@ -305,7 +305,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
