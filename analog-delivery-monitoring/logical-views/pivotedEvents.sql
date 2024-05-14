@@ -10,8 +10,11 @@ $QueryMetadata
     ]
 }
 */
-create or replace temporary view pivotedEvents as
-	SELECT * FROM rankedEvents
+create or replace temporary view pivotedEvents AS
+	WITH rankedEventWithOriginalStatus AS (
+		SELECT re.*, re.status AS originalStatus FROM rankedEvents re
+	)
+	SELECT * FROM rankedEventWithOriginalStatus
 	PIVOT
 	(
 		count(status)

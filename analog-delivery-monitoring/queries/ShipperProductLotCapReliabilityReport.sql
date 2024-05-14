@@ -15,6 +15,8 @@ CREATE OR replace TEMPORARY VIEW product890 AS
 		SELECT 
 			e.shipper, 
 			e.product,
+			e.lot,
+			e.geokey,
 			sum(e.CON016) as CON016,
 			sum(e.RECAG001A) as RECAG001A,
 			sum(e.RECAG002A) as RECAG002A,
@@ -38,11 +40,13 @@ CREATE OR replace TEMPORARY VIEW product890 AS
 			sum(e.RECAG013) as RECAG013
 		FROM groupedPivotEvents e
 		WHERE e.product = "890"
-		GROUP BY e.shipper, e.product
+		GROUP BY e.shipper, e.product, e.lot, e.geokey
 	), product890CalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
+			e.geokey,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECAG001A, 0) + COALESCE(e.RECAG002A, 0) AS Consegnate,
 			(COALESCE(e.RECAG001C, 0) + COALESCE(e.RECAG002C, 0)) / (COALESCE(e.RECAG001A, 0) + COALESCE(e.RECAG002A, 0)) AS PercentualeDematConsegnate,
@@ -96,6 +100,8 @@ CREATE OR replace TEMPORARY VIEW productAR AS
 		SELECT 
 			e.shipper, 
 			e.product,
+			e.lot,
+			e.geokey,
 			sum(e.CON016) as CON016,
 			sum(e.RECRN001A) as RECRN001A,
 			sum(e.RECRN002A) as RECRN002A,
@@ -115,11 +121,13 @@ CREATE OR replace TEMPORARY VIEW productAR AS
 			sum(e.RECRN013) as RECRN013
 		FROM groupedPivotEvents e
 		WHERE e.product = "AR"
-		GROUP BY e.shipper, e.product
+		GROUP BY e.shipper, e.product, e.lot, e.geokey
 	), productARCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
+			e.geokey,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRN001A, 0) AS Consegnate,
 			COALESCE(e.RECRN001C, 0) / COALESCE(e.RECRN001A, 0) AS PercentualeDematConsegnate,
@@ -173,6 +181,8 @@ CREATE OR replace TEMPORARY VIEW productRS AS
 		SELECT 
 			e.shipper, 
 			e.product,
+			e.lot,
+			e.geokey,
 			sum(e.CON016) as CON016,
 			sum(e.RECRS002A) as RECRS002A,
 			sum(e.RECRS004A) as RECRS004A,
@@ -190,11 +200,13 @@ CREATE OR replace TEMPORARY VIEW productRS AS
 			sum(e.RECRS013) as RECRS013
 		FROM groupedPivotEvents e
 		WHERE e.product = "RS"
-		GROUP BY e.shipper, e.product
+		GROUP BY e.shipper, e.product, e.lot, e.geokey
 	), productRSCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
+			e.geokey,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRS001C, 0) AS Consegnate,
 			"NA" AS PercentualeDematConsegnate,
@@ -249,6 +261,8 @@ CREATE OR replace TEMPORARY VIEW productRIR AS
 		SELECT 
 			e.shipper, 
 			e.product,
+			e.lot,
+			e.geokey,
 			sum(e.CON016) as CON016,
 			sum(e.RECRI003A) as RECRI003A,
 			sum(e.RECRI004A) as RECRI004A,
@@ -257,11 +271,13 @@ CREATE OR replace TEMPORARY VIEW productRIR AS
 			sum(e.RECRI005) as RECRI005
 		FROM groupedPivotEvents e
 		WHERE e.product = "RIR"
-		GROUP BY e.shipper, e.product
+		GROUP BY e.shipper, e.product, e.lot, e.geokey
 	), productRIRCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
+			e.geokey,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRI003A, 0) AS Consegnate,
 			COALESCE(e.RECRI003C, 0) / COALESCE(e.RECRI003A, 0) AS PercentualeDematConsegnate,
@@ -315,6 +331,8 @@ CREATE OR replace TEMPORARY VIEW productRIS AS
 		SELECT 
 			e.shipper, 
 			e.product,
+			e.lot,
+			e.geokey,
 			sum(e.CON016) as CON016,
 			sum(e.RECRSI004A) as RECRSI004A,
 			sum(e.RECRSI003C) as RECRSI003C,
@@ -322,11 +340,13 @@ CREATE OR replace TEMPORARY VIEW productRIS AS
 			sum(e.RECRSI005) as RECRSI005
 		FROM groupedPivotEvents e
 		WHERE e.product = "RIS"
-		GROUP BY e.shipper, e.product
+		GROUP BY e.shipper, e.product, e.lot, e.geokey
 	), productRISCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
+			e.geokey,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRSI003C, 0) AS Consegnate,
 			"NA" AS PercentualeDematConsegnate,

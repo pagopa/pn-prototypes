@@ -1,59 +1,50 @@
 /*
 $QueryMetadata
 {
-    "name": "pivotedEvents",
-    "dependencies": [
-        {
-            "name": "rankedEvents",
-            "location": "analog-delivery-monitoring/logical-views/rankedEvents.sql"
-        }
-    ]
-}
-*/
-create or replace temporary view pivotedEvents as
-	WITH lastEvents AS (
-		SELECT e.requestId, e.shipper, e.product, e.lot, e.status, max(e.ranking)
-		FROM rankedEvents e
-		WHERE e.status RLIKE("(CON016)|(REC.*)")
-		GROUP BY e.requestId, e.shipper, e.product, e.lot, e.status
-	), eventsGroupedByShipperProduct AS (
-		SELECT e.shipper, e.product, e.status, COUNT(*) AS _count
-		FROM lastEvents e
-		GROUP BY e.shipper, e.product, e.status
-	), pivoted AS (
-		SELECT * FROM eventsGroupedByShipperProduct
-		PIVOT
-		(
-			first(_count)
-			FOR status IN (
-				'CON016',
-				'RECRN001A', 'RECRN002A', 'RECRN003A', 'RECRN004A', 'RECRN005A', 'RECRN001C', 'RECRN002C', 'RECRN003C', 'RECRN004C', 'RECRN005C', 'RECRN002D', 'RECRN002F', 'RECRN006', 'RECRN010', 'RECRN011', 'RECRN013',
-				'RECAG001A', 'RECAG002A', 'RECAG003A', 'RECAG005A', 'RECAG006A', 'RECAG007A', 'RECAG008A', 'RECAG001C', 'RECAG002C', 'RECAG003C', 'RECAG005C', 'RECAG006C', 'RECAG007C', 'RECAG008C', 'RECAG003D', 'RECAG003F', 'RECAG004', 'RECAG010', 'RECAG011A', 'RECAG013',
-				'RECRS002A', 'RECRS004A', 'RECRS005A', 'RECRS001C', 'RECRS002C', 'RECRS003C', 'RECRS004C', 'RECRS005C', 'RECRS002D', 'RECRS002F', 'RECRS006', 'RECRS010', 'RECRS011', 'RECRS013',
-				'RECRI003A', 'RECRI004A', 'RECRI003C', 'RECRI004C', 'RECRI005',
-				'RECRSI003C', 'RECRSI004A', 'RECRSI004C', 'RECRSI005'
-			)
-		)
-	) SELECT * FROM pivoted
-;
-
-/*
-$QueryMetadata
-{
     "name": "product890",
     "dependencies": [
         {
-            "name": "pivotedEvents",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "name": "groupedPivotEvents",
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
 */
 CREATE OR replace TEMPORARY VIEW product890 AS
-	WITH product890CalculateKpis AS (
+	WITH product890Aggregates AS (
+		SELECT 
+			e.shipper, 
+			e.product,
+			e.lot,
+			sum(e.CON016) as CON016,
+			sum(e.RECAG001A) as RECAG001A,
+			sum(e.RECAG002A) as RECAG002A,
+			sum(e.RECAG003A) as RECAG003A,
+			sum(e.RECAG005A) as RECAG005A,
+			sum(e.RECAG006A) as RECAG006A,
+			sum(e.RECAG007A) as RECAG007A,
+			sum(e.RECAG008A) as RECAG008A,
+			sum(e.RECAG011A) as RECAG011A,
+			sum(e.RECAG001C) as RECAG001C,
+			sum(e.RECAG002C) as RECAG002C,
+			sum(e.RECAG003C) as RECAG003C,
+			sum(e.RECAG005C) as RECAG005C,
+			sum(e.RECAG006C) as RECAG006C,
+			sum(e.RECAG007C) as RECAG007C,
+			sum(e.RECAG008C) as RECAG008C,
+			sum(e.RECAG003D) as RECAG003D,
+			sum(e.RECAG003F) as RECAG003F,
+			sum(e.RECAG010) as RECAG010,
+			sum(e.RECAG004) as RECAG004,
+			sum(e.RECAG013) as RECAG013
+		FROM groupedPivotEvents e
+		WHERE e.product = "890"
+		GROUP BY e.shipper, e.product, e.lot
+	), product890CalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECAG001A, 0) + COALESCE(e.RECAG002A, 0) AS Consegnate,
 			(COALESCE(e.RECAG001C, 0) + COALESCE(e.RECAG002C, 0)) / (COALESCE(e.RECAG001A, 0) + COALESCE(e.RECAG002A, 0)) AS PercentualeDematConsegnate,
@@ -63,15 +54,14 @@ CREATE OR replace TEMPORARY VIEW product890 AS
 			COALESCE(e.RECAG003F, 0) / COALESCE(e.RECAG003D, 0) AS PercentualeDematIrreperibile,
 			COALESCE(e.RECAG010, 0) AS Inesito,
 			COALESCE(e.RECAG011A, 0) AS InGiacenza,
-			COALESCE(e.RECAG005A, 0) + COALESCE(e.RECAG005A, 0) AS ConsegnateInGiacenza,
+			COALESCE(e.RECAG005A, 0) + COALESCE(e.RECAG006A, 0) AS ConsegnateInGiacenza,
 			(COALESCE(e.RECAG005C, 0) + COALESCE(e.RECAG006C, 0)) / (COALESCE(e.RECAG005A, 0) + COALESCE(e.RECAG006A, 0)) AS PercentualeDematConsegnateInGiacenza,
 			COALESCE(e.RECAG007A, 0) AS MancataConsegnaInGiacenza,
 			COALESCE(e.RECAG007C, 0) / COALESCE(e.RECAG007A, 0) AS PercentualeDematMancataConsegnaInGiacenza,
 			COALESCE(e.RECAG008A, 0) AS CompiutaGiacenza,
 			COALESCE(e.RECAG008C, 0) / COALESCE(e.RECAG008A, 0) AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECAG004, 0) + COALESCE(e.RECAG013, 0) AS NonRendicontabili
-		FROM pivotedEvents e
-		WHERE e.product = "890"
+		FROM product890Aggregates e
 	), product890PartialKpis AS (
 		SELECT
 			p.*,
@@ -97,17 +87,43 @@ $QueryMetadata
     "name": "productAR",
     "dependencies": [
         {
-            "name": "pivotedEvents",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "name": "groupedPivotEvents",
+            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
         }
     ]
 }
 */
 CREATE OR replace TEMPORARY VIEW productAR AS
-	WITH productARCalculateKpis AS (
+	WITH productARAggregates AS (
+		SELECT 
+			e.shipper, 
+			e.product,
+			e.lot,
+			sum(e.CON016) as CON016,
+			sum(e.RECRN001A) as RECRN001A,
+			sum(e.RECRN002A) as RECRN002A,
+			sum(e.RECRN003A) as RECRN003A,
+			sum(e.RECRN004A) as RECRN004A,
+			sum(e.RECRN005A) as RECRN005A,
+			sum(e.RECRN001C) as RECRN001C,
+			sum(e.RECRN002C) as RECRN002C,
+			sum(e.RECRN003C) as RECRN003C,
+			sum(e.RECRN004C) as RECRN004C,
+			sum(e.RECRN005C) as RECRN005C,
+			sum(e.RECRN002D) as RECRN002D,
+			sum(e.RECRN002F) as RECRN002F,
+			sum(e.RECRN010) as RECRN010,
+			sum(e.RECRN011) as RECRN011,
+			sum(e.RECRN006) as RECRN006,
+			sum(e.RECRN013) as RECRN013
+		FROM groupedPivotEvents e
+		WHERE e.product = "AR"
+		GROUP BY e.shipper, e.product, e.lot
+	), productARCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRN001A, 0) AS Consegnate,
 			COALESCE(e.RECRN001C, 0) / COALESCE(e.RECRN001A, 0) AS PercentualeDematConsegnate,
@@ -124,8 +140,7 @@ CREATE OR replace TEMPORARY VIEW productAR AS
 			COALESCE(e.RECRN005A, 0) AS CompiutaGiacenza,
 			COALESCE(e.RECRN005C, 0) / COALESCE(e.RECRN005A, 0) AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECRN006, 0) + COALESCE(e.RECRN013, 0) AS NonRendicontabili
-		FROM pivotedEvents e
-		WHERE e.product = "AR"
+		FROM productARAggregates e
 	), productARPartialKpis AS (
 		SELECT
 			p.*,
@@ -151,17 +166,41 @@ $QueryMetadata
     "name": "productRS",
     "dependencies": [
         {
-            "name": "pivotedEvents",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "name": "groupedPivotEvents",
+            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
         }
     ]
 }
 */
 CREATE OR replace TEMPORARY VIEW productRS AS
-	WITH productRSCalculateKpis AS (
+	WITH productRSAggregates AS (
+		SELECT 
+			e.shipper, 
+			e.product,
+			e.lot,
+			sum(e.CON016) as CON016,
+			sum(e.RECRS002A) as RECRS002A,
+			sum(e.RECRS004A) as RECRS004A,
+			sum(e.RECRS005A) as RECRS005A,
+			sum(e.RECRS001C) as RECRS001C,
+			sum(e.RECRS002C) as RECRS002C,
+			sum(e.RECRS003C) as RECRS003C,
+			sum(e.RECRS004C) as RECRS004C,
+			sum(e.RECRS005C) as RECRS005C,
+			sum(e.RECRS002D) as RECRS002D,
+			sum(e.RECRS002F) as RECRS002F,
+			sum(e.RECRS010) as RECRS010,
+			sum(e.RECRS011) as RECRS011,
+			sum(e.RECRS006) as RECRS006,
+			sum(e.RECRS013) as RECRS013
+		FROM groupedPivotEvents e
+		WHERE e.product = "RS"
+		GROUP BY e.shipper, e.product, e.lot
+	), productRSCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRS001C, 0) AS Consegnate,
 			"NA" AS PercentualeDematConsegnate,
@@ -178,7 +217,7 @@ CREATE OR replace TEMPORARY VIEW productRS AS
 			COALESCE(e.RECRS005A, 0) AS CompiutaGiacenza,
 			COALESCE(e.RECRS005C, 0) / COALESCE(e.RECRS005A, 0) AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECRS006, 0) + COALESCE(e.RECRS013, 0) AS NonRendicontabili
-		FROM pivotedEvents e
+		FROM productRSAggregates e
 		WHERE e.product = "RS"
 	), productRSPartialKpis AS (
 		SELECT
@@ -205,17 +244,32 @@ $QueryMetadata
     "name": "productRIR",
     "dependencies": [
         {
-            "name": "pivotedEvents",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "name": "groupedPivotEvents",
+            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
         }
     ]
 }
 */
 CREATE OR replace TEMPORARY VIEW productRIR AS
-	WITH productRIRCalculateKpis AS (
+	WITH productRIRAggregates AS (
+		SELECT 
+			e.shipper, 
+			e.product,
+			e.lot,
+			sum(e.CON016) as CON016,
+			sum(e.RECRI003A) as RECRI003A,
+			sum(e.RECRI004A) as RECRI004A,
+			sum(e.RECRI003C) as RECRI003C,
+			sum(e.RECRI004C) as RECRI004C,
+			sum(e.RECRI005) as RECRI005
+		FROM groupedPivotEvents e
+		WHERE e.product = "RIR"
+		GROUP BY e.shipper, e.product, e.lot
+	), productRIRCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRI003A, 0) AS Consegnate,
 			COALESCE(e.RECRI003C, 0) / COALESCE(e.RECRI003A, 0) AS PercentualeDematConsegnate,
@@ -232,8 +286,7 @@ CREATE OR replace TEMPORARY VIEW productRIR AS
 			"NA" AS CompiutaGiacenza,
 			"NA" AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECRI005, 0) AS NonRendicontabili
-		FROM pivotedEvents e
-		WHERE e.product = "RIR"
+		FROM productRIRAggregates e
 	), productRIRPartialKpis AS (
 		SELECT
 			p.*,
@@ -259,17 +312,31 @@ $QueryMetadata
     "name": "productRIS",
     "dependencies": [
         {
-            "name": "pivotedEvents",
-            "location": "analog-delivery-monitoring/queries/ShipperProductReliabilityReport.sql"
+            "name": "groupedPivotEvents",
+            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
         }
     ]
 }
 */
 CREATE OR replace TEMPORARY VIEW productRIS AS
-	WITH productRISCalculateKpis AS (
+	WITH productRISAggregates AS (
+		SELECT 
+			e.shipper, 
+			e.product,
+			e.lot,
+			sum(e.CON016) as CON016,
+			sum(e.RECRSI004A) as RECRSI004A,
+			sum(e.RECRSI003C) as RECRSI003C,
+			sum(e.RECRSI004C) as RECRSI004C,
+			sum(e.RECRSI005) as RECRSI005
+		FROM groupedPivotEvents e
+		WHERE e.product = "RIS"
+		GROUP BY e.shipper, e.product, e.lot
+	), productRISCalculateKpis AS (
 		SELECT
 			e.shipper,
 			e.product,
+			e.lot,
 			COALESCE(e.CON016, 0) AS PreseInCarico,
 			COALESCE(e.RECRSI003C, 0) AS Consegnate,
 			"NA" AS PercentualeDematConsegnate,
@@ -286,8 +353,7 @@ CREATE OR replace TEMPORARY VIEW productRIS AS
 			"NA" AS CompiutaGiacenza,
 			"NA" AS PercentualeDematCompiutaGiacenza,
 			COALESCE(e.RECRSI005, 0) AS NonRendicontabili
-		FROM pivotedEvents e
-		WHERE e.product = "RIS"
+		FROM productRISAggregates e
 	), productRISPartialKpis AS (
 		SELECT
 			p.*,
