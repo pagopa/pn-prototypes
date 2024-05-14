@@ -90,7 +90,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
@@ -171,7 +171,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
@@ -251,7 +251,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
@@ -321,7 +321,7 @@ $QueryMetadata
     "dependencies": [
         {
             "name": "groupedPivotEvents",
-            "location": "analog-delivery-monitoring/queries/groupedPivotEvents.sql"
+            "location": "analog-delivery-monitoring/logical-views/groupedPivotEvents.sql"
         }
     ]
 }
@@ -386,7 +386,7 @@ CREATE OR replace TEMPORARY VIEW productRIS AS
 /*
 $QueryMetadata
 {
-    "name": "ShipperProductReliabilityReport",
+    "name": "ShipperProductLotCapReliabilityReport",
     "dependencies": [
         {
             "name": "product890",

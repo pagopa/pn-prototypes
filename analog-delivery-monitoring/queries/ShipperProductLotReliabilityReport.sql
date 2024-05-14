@@ -376,7 +376,7 @@ CREATE OR replace TEMPORARY VIEW productRIS AS
 /*
 $QueryMetadata
 {
-    "name": "ShipperProductReliabilityReport",
+    "name": "ShipperProductLotReliabilityReport",
     "dependencies": [
         {
             "name": "product890",
