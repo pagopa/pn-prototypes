@@ -20,7 +20,7 @@ OPTIONS (
 )
 
 
-create or replace temporary view complete_updated_ec_metadata as 
+create or replace temporary view completeUpdatedEcMetadata as
   WITH
     last_modification_by_request_id AS (
       select
@@ -227,7 +227,7 @@ WITH kpi AS (
 	        'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
 	      )
 	    ),-1) as demat_23L
-	FROM complete_updated_ec_metadata c
+	FROM completeUpdatedEcMetadata c
 	WHERE c.ec_metadata.paperMeta_productType IN ('890', 'AR', 'RS' )
 	AND left(c.ec_metadata.requestTimestamp, 7) < "2023-10"
 ) SELECT 

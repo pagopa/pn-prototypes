@@ -10,12 +10,12 @@ WITH max_sendRequest AS (
 	SELECT
 		p.sendrequestid,
 		max(c.paper_request_id) AS max_paper_request_id
-	FROM analog_process p LEFT JOIN complete_updated_ec_metadata c
+	FROM analog_process p LEFT JOIN completeUpdatedEcMetadata c
 	ON c.timelineElementId = p.sendrequestid
 	GROUP BY sendrequestid
-), last_complete_updated_ec_metadata AS (
+), last_completeUpdatedEcMetadata AS (
 	SELECT c.*
-	FROM complete_updated_ec_metadata c JOIN max_sendRequest m
+	FROM completeUpdatedEcMetadata c JOIN max_sendRequest m
 	ON c.paper_request_id = m.max_paper_request_id
 )
 SELECT
@@ -63,4 +63,4 @@ SELECT
     c.ec_metadata.paperMeta_productType as prodotto,
     c.costi_recapito.recapitista,
     c.costi_recapito.lotto
-FROM analog_process p LEFT JOIN last_complete_updated_ec_metadata c ON c.timelineElementId = p.sendrequestid;
+FROM analog_process p LEFT JOIN last_completeUpdatedEcMetadata c ON c.timelineElementId = p.sendrequestid;

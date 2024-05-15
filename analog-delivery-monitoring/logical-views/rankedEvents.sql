@@ -20,7 +20,7 @@ create or replace temporary view rankedEvents as
 			ec_metadata.paperMeta_productType as product,
 			e.paperProg_status as status,
 			e.paperProg_statusDateTime as statusDateTime
-		FROM complete_updated_ec_metadata c LATERAL VIEW EXPLODE(c.ec_metadata.event_list) as e
+		FROM completeUpdatedEcMetadata c LATERAL VIEW EXPLODE(c.ec_metadata.event_list) as e
 	), allEventsRanked AS (
 		SELECT DISTINCT
 			e.requestId,

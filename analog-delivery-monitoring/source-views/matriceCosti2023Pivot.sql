@@ -1,7 +1,8 @@
 /*
 $QueryMetadata
 {
-    "name": "matriceCosti",
+    "name": "matrice_costi",
+    "persist": false,
     "dependencies": []
 }
 */

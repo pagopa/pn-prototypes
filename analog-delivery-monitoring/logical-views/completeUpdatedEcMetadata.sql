@@ -4,21 +4,21 @@ $QueryMetadata
     "name": "completeUpdatedEcMetadata",
     "dependencies": [
         {
-            "name": "pnEcRichiesteMetadati",
+            "name": "incremental_ec_metadta__fromfile",
             "location": "analog-delivery-monitoring/source-views/pnEcRichiesteMetadati.sql"
         },
         {
-            "name": "pnTimelines",
+            "name": "incremental_timeline",
             "location": "analog-delivery-monitoring/source-views/pnTimelines.sql"
         },
         {
-            "name": "matriceCosti",
+            "name": "matrice_costi",
             "location": "analog-delivery-monitoring/source-views/matriceCosti2023Pivot.sql"
         }
     ]
 }
 */
-create or replace temporary view complete_updated_ec_metadata as
+create or replace temporary view completeUpdatedEcMetadata as
   WITH
     last_modification_by_request_id AS (
       select
