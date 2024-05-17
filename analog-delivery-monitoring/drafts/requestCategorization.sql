@@ -1,3 +1,9 @@
+CREATE or replace temporary view exported_data_reloaded
+    USING org.apache.spark.sql.parquet
+    OPTIONS (
+    path "s3a://pn-datamonitoring-eu-south-1-510769970275/parquet/generated/pn9391_431_notification_with_related_ecmetadata"
+);
+
 with
     ecmetadata_enriched as (
         select
