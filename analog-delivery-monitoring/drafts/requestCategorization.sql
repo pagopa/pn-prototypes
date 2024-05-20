@@ -33,8 +33,12 @@ with
             ) as exp_giacenza_pre_esito,
             filter (
                         event_list_codes,
-                        c -> c in ('RECRS010', 'RECRN010', 'RECAG010','RECRS011', 'RECRN011', 'RECAG011A', 'RECRSI001', 'RECRI001', 'RECRSI002', 'RECRI002')
-            ) as exp_aggiornamenti_tecnici_recapito,
+                        c -> c in ('RECRS010', 'RECRN010', 'RECAG010','RECRS011', 'RECRN011', 'RECAG011A')
+            ) as exp_inesito,
+            filter (
+                        event_list_codes,
+                        c -> c in ( 'RECRSI001', 'RECRI001', 'RECRSI002', 'RECRI002')
+            ) as exp_avvio_internazionale,
             filter (
                         event_list_codes,
                         c -> c in ('RECRS006','RECRS013','RECRN006','RECRN013','RECAG004','RECAG013','RECRSI005','RECRI005')
@@ -85,8 +89,10 @@ with
                  when size(exp_giacenza_pre_esito) > 0 then 'exp_preesito_giacenza'
                  when size(exp_atto_non_consegnato_pre_esito) > 0 AND attempt = 0 then 'exp_preesito_irreperibile_tent1'
                  when size(exp_atto_non_consegnato_pre_esito) > 0 AND attempt = 1 then 'exp_preesito_irreperibile_tent2'
-                 when size(exp_aggiornamenti_tecnici_recapito) > 0 AND attempt = 0 then 'exp_aggiornamenti_giacenza_trasportointernazionale_tent1'
-                 when size(exp_aggiornamenti_tecnici_recapito) > 0 AND attempt = 1 then 'exp_aggiornamenti_giacenza_trasportointernazionale_tent2'
+                 when size(exp_inesito) > 0 AND attempt = 0 then 'exp_inesito_tent1'
+                 when size(exp_inesito) > 0 AND attempt = 1 then 'exp_inesito_tent2'
+                 when size(exp_avvio_internazionale) > 0 AND attempt = 0 then 'exp_internazionale_tent1'
+                 when size(exp_avvio_internazionale) > 0 AND attempt = 1 then 'exp_internazionale_tent2'
                  when size(exp_errori_pre_esito) > 0 then 'exp_bloccato_su_furto'
                  when size(exp_atto_stampato) > 0 AND attempt = 0 then 'exp_spedizione_stampata_tent1'
                  when size(exp_atto_stampato) > 0 AND attempt = 1 then 'exp_spedizione_stampata_tent2'
@@ -98,12 +104,45 @@ with
             *
         from
             ecmetadata_enriched
-    )
-select
-    *
-from ecmetadata_categorization
-where
-    requests_for_iun == requestId_order AND
-    livello_di_perfezionamento = 'NE_DECORRENZA_NE_VISUALIZZATO'
-  AND migliore_evento_trovato = 'exp_preesito_giacenza'
-;
+    ), final_details AS (
+    select
+        migliore_evento_trovato,
+        requests_for_iun,
+        exp_scarti_consolidatore,
+        exp_atto_consegnato_pre_esito,
+        exp_atto_non_consegnato_pre_esito,
+        exp_giacenza_pre_esito,
+        exp_inesito,
+        exp_avvio_internazionale,
+        exp_errori_pre_esito,
+        exp_atto_consegnato_esito,
+        exp_atto_non_consegnato_esito,
+        exp_giacenza_esito,
+        exp_atto_stampato,
+        exp_lavorazioni_consolidatore,
+        exp_delivery_failure_cause,
+        attempt,
+        modalita_consegna,
+        livello_di_perfezionamento,
+        sent_at_day,
+        description,
+        iun,
+        missing_file_keys,
+        send_analog_timelineid,
+        requestId,
+        requestTimestamp,
+        clientRequestTimeStamp,
+        statusRequest,
+        `version`,
+        event_list_length,
+        dynamoExportName
+    from ecmetadata_categorization
+    where
+        requests_for_iun == requestId_order AND
+        livello_di_perfezionamento = 'NE_DECORRENZA_NE_VISUALIZZATO'
+) SELECT
+      migliore_evento_trovato,
+      count(*) as notifiche
+FROM final_details
+group BY migliore_evento_trovato
+ORDER  by migliore_evento_trovato
