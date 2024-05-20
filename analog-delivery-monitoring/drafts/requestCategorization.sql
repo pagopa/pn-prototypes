@@ -9,14 +9,6 @@ with
         select
             filter (
                         event_list_codes,
-                        c -> c in ('RECAG001A','RECAG001B','RECRN001A','RECRN001B','RECRN003A','RECRN003B','RECRN005A','RECRN005B','RECAG002A','RECAG002B','RECAG005A','RECAG005B','RECRI003A','RECRI003B')
-            ) as pre_esiti_positivi,
-            filter (
-                        event_list_codes,
-                        c -> c in ('RECAG001C','RECRN001C','RECRN003C','RECRN005C','RECAG002C','RECAG005C','RECRI003C')
-            ) as esiti_finali_positivi,
-            filter (
-                        event_list_codes,
                         c -> c in ('CON993','CON995','CON996','CON997','CON998')
             ) as exp_scarti_consolidatore,
             filter (
@@ -25,8 +17,12 @@ with
             ) as exp_atto_consegnato_pre_esito,
             filter (
                         event_list_codes,
-                        c -> c in ('RECRS002A','RECRS002D','RECRN002A','RECRN002D','RECAG003A','RECAG003D', 'RECRSI004A', 'RECRI004A')
+                        c -> c in ('RECRS002A','RECRN002A','RECAG003A', 'RECRSI004A', 'RECRI004A')
             ) as exp_atto_non_consegnato_pre_esito,
+            filter (
+                        event_list_codes,
+                        c -> c in ('RECRS002D','RECRN002D','RECAG003D')
+            ) as exp_atto_non_consegnato_irrep_pre_esito,
             filter (
                         event_list_codes,
                         c -> c in ('RECRS003C','RECRS004A','RECRS005A','RECRN003A','RECRN004A','RECRN005A','RECAG005A','RECAG006A','RECAG007A','RECAG008A')
@@ -49,12 +45,20 @@ with
             ) as exp_atto_consegnato_esito,
             filter (
                         event_list_codes,
-                        c -> c in ('RECRS002C','RECRS002F','RECRN002C','RECRN002F','RECAG003C','RECAG003F','RECRSI004C','RECRI004C')
+                        c -> c in ('RECRS002C','RECRN002C','RECAG003C','RECRSI004C','RECRI004C')
             ) as exp_atto_non_consegnato_esito,
+            filter (
+                        event_list_codes,
+                        c -> c in ('RECRS002F','RECRN002F','RECAG003F')
+            ) as exp_atto_non_consegnato_irrep_esito,
             filter (
                         event_list_codes,
                         c -> c in ('RECRS003C','RECRS004C','RECRS005C','RECRN003C','RECRN004C','RECRN005C','RECAG005C','RECAG006C','RECAG007C','RECAG008C')
             ) as exp_giacenza_esito,
+            filter (
+                        event_list_codes,
+                        c -> c in ('CON016', 'CON018')
+            ) as exp_consegnato_recapitista,
             filter (
                         event_list_codes,
                         c -> c in ('CON080')
@@ -82,18 +86,21 @@ with
                  when size(exp_atto_consegnato_esito) > 0 then 'exp_finali_positivi'
                  when size(exp_atto_non_consegnato_esito) > 0 AND attempt = 0 AND (exp_delivery_failure_cause like '%M02%' OR exp_delivery_failure_cause like '%M05%') then 'exp_finali_mancataconsegna_no2t_tent1'
                  when size(exp_giacenza_esito) > 0 then 'exp_finali_giacenza'
-                 when size(exp_atto_non_consegnato_esito) > 0 AND attempt = 0 then 'exp_finali_irreperibile_tent1'
-                 when size(exp_atto_non_consegnato_esito) > 0 AND attempt = 1 then 'exp_finali_irreberibile_tent2'
-                 when size(exp_atto_consegnato_pre_esito) > 0 then 'exp_preesito_positivi'
+                 when (size(exp_atto_non_consegnato_esito) > 0 OR size(exp_atto_non_consegnato_irrep_esito) > 0) AND attempt = 0 then 'exp_finali_irreperibile_tent1'
+                 when (size(exp_atto_non_consegnato_esito) > 0 OR size(exp_atto_non_consegnato_irrep_esito) > 0) AND attempt = 1 then 'exp_finali_irreberibile_tent2'
+                 when size(exp_atto_consegnato_pre_esito) > 0 AND attempt = 0 then 'exp_preesito_positivi_tent1'
+                 when size(exp_atto_consegnato_pre_esito) > 0 AND attempt = 1 then 'exp_preesito_positivi_tent2'
                  when size(exp_atto_non_consegnato_pre_esito) > 0 AND attempt = 0 AND (exp_delivery_failure_cause like '%M02%' OR exp_delivery_failure_cause like '%M05%') then 'exp_preesito_mancataconsegna_no2t_tent1'
                  when size(exp_giacenza_pre_esito) > 0 then 'exp_preesito_giacenza'
-                 when size(exp_atto_non_consegnato_pre_esito) > 0 AND attempt = 0 then 'exp_preesito_irreperibile_tent1'
-                 when size(exp_atto_non_consegnato_pre_esito) > 0 AND attempt = 1 then 'exp_preesito_irreperibile_tent2'
+                 when (size(exp_atto_non_consegnato_pre_esito) > 0 OR SIZE(exp_atto_non_consegnato_irrep_pre_esito) >0 ) AND attempt = 0 then 'exp_preesito_irreperibile_tent1'
+                 when (size(exp_atto_non_consegnato_pre_esito) > 0 OR SIZE(exp_atto_non_consegnato_irrep_pre_esito) >0 ) AND attempt = 1 then 'exp_preesito_irreperibile_tent2'
                  when size(exp_inesito) > 0 AND attempt = 0 then 'exp_inesito_tent1'
                  when size(exp_inesito) > 0 AND attempt = 1 then 'exp_inesito_tent2'
                  when size(exp_avvio_internazionale) > 0 AND attempt = 0 then 'exp_internazionale_tent1'
                  when size(exp_avvio_internazionale) > 0 AND attempt = 1 then 'exp_internazionale_tent2'
                  when size(exp_errori_pre_esito) > 0 then 'exp_bloccato_su_furto'
+                 when size(exp_consegnato_recapitista) > 0 AND attempt = 0 then 'exp_consegnato_recapito_tent1'
+                 when size(exp_consegnato_recapitista) > 0 AND attempt = 1 then 'exp_consegnato_recapito_tent2'
                  when size(exp_atto_stampato) > 0 AND attempt = 0 then 'exp_spedizione_stampata_tent1'
                  when size(exp_atto_stampato) > 0 AND attempt = 1 then 'exp_spedizione_stampata_tent2'
                  when size(exp_lavorazioni_consolidatore) > 0 AND attempt = 0 then 'exp_spedizione_in_lavorazione_consolidatore_tent1'
@@ -129,7 +136,7 @@ with
         iun,
         missing_file_keys,
         send_analog_timelineid,
-        requestId,
+        regexp_extract(requestId, 'pn-cons-000~(.*)', 1) AS requestId,
         requestTimestamp,
         clientRequestTimeStamp,
         statusRequest,
@@ -141,8 +148,5 @@ with
         requests_for_iun == requestId_order AND
         livello_di_perfezionamento = 'NE_DECORRENZA_NE_VISUALIZZATO'
 ) SELECT
-      migliore_evento_trovato,
-      count(*) as notifiche
-FROM final_details
-group BY migliore_evento_trovato
-ORDER  by migliore_evento_trovato
+    *
+FROM final_details;
