@@ -1,7 +1,8 @@
 /*
 $QueryMetadata
 {
-    "name": "pnTimelines",
+    "name": "incremental_timeline",
+    "persist": false,
     "dependencies": []
 }
 */

@@ -23,7 +23,13 @@
 hs_err_pid*
 replay_pid*
 
+# Jetbrains stuffs
 .idea
+
+# Dbeaver stuffs
+.dbeaver
+.project
+/Scripts/
 
 # Data Monitoring
 /analog-delivery-monitoring/templates/

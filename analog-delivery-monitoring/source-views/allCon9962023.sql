@@ -2,6 +2,7 @@
 $QueryMetadata
 {
     "name": "con996_2023",
+    "persist": false,
     "dependencies": []
 }
 */

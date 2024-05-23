@@ -1,7 +1,8 @@
 /*
 $QueryMetadata
 {
-    "name": "pnEcRichiesteMetadati",
+    "name": "incremental_ec_metadta__fromfile",
+    "persist": false,
     "dependencies": []
 }
 */

@@ -1,7 +1,8 @@
 /*
 $QueryMetadata
 {
-    "name": "pnNotifications",
+    "name": "incremental_notification",
+    "persist": false,
     "dependencies": []
 }
 */
