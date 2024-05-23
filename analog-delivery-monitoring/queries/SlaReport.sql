@@ -146,7 +146,7 @@ WITH kpi AS (
 	        'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
 	      )
 	    ),-1) as demat_23L
-	FROM complete_updated_ec_metadata c
+	FROM completeUpdatedEcMetadata c
 	WHERE c.ec_metadata.paperMeta_productType IN ('890', 'AR', 'RS', 'RIS', 'RIR' )
 ) SELECT
 	ente_id,
