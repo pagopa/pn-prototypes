@@ -67,6 +67,9 @@ create or replace temporary view completeUpdatedEcMetadata as
         named_struct (
           'timeline_zip', get_json_object( t.details, '$.physicalAddress.M.zip.S'),
           'timeline_state', get_json_object( t.details, '$.physicalAddress.M.foreignState.S'),
+          'paper_analogCost', get_json_object( t.details, '$.analogCost.N'),
+          'paper_envelopeWeight', get_json_object( t.details, '$.envelopeWeight.N'),
+          'paper_numberOfPages', get_json_object( t.details, '$.numberOfPages.N'),
           'paid', t.paid
         )
          AS semplified_timeline_details,
@@ -86,7 +89,11 @@ create or replace temporary view completeUpdatedEcMetadata as
         named_struct (
           'recapitista', c.recapitista,
           'lotto', c.lotto,
-          'geokey', c.geokey
+          'geokey', c.geokey,
+          'costo_scaglione', c.costo,
+          'costo_plico', c.costo_plico,
+          'costo_foglio', c.costo_foglio,
+          'costo_demat', c.costo_demat
         )
          as costi_recapito
       from
@@ -103,11 +110,24 @@ create or replace temporary view completeUpdatedEcMetadata as
               end
             )
           and
-            c.min = 1
+            c.min =
+            (
+            CASE
+            	WHEN CAST(et.semplified_timeline_details.paper_envelopeWeight AS int) BETWEEN 1 AND 20 THEN 1
+	            WHEN CAST(et.semplified_timeline_details.paper_envelopeWeight AS int) BETWEEN 21 AND 50 THEN 21
+	            WHEN CAST(et.semplified_timeline_details.paper_envelopeWeight AS int) BETWEEN 51 AND 100 THEN 51
+	            WHEN CAST(et.semplified_timeline_details.paper_envelopeWeight AS int) BETWEEN 101 AND 250 THEN 101
+	            WHEN CAST(et.semplified_timeline_details.paper_envelopeWeight AS int) BETWEEN 251 AND 350 THEN 251
+	            WHEN CAST(et.semplified_timeline_details.paper_envelopeWeight AS int) BETWEEN 351 AND 1000 THEN 351
+	            WHEN CAST(et.semplified_timeline_details.paper_envelopeWeight AS int) BETWEEN 1001 AND 2000 THEN 1001
+	            ELSE NULL
+	        END
+            )
     )
 select
     *
 FROM
     ecmetadata_with_timeline_and_costi
 where
-    timelineElementId is not null;
+    timelineElementId is not null
+;

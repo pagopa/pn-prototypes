@@ -29,6 +29,7 @@ replay_pid*
 # Dbeaver stuffs
 .dbeaver
 .project
+/Scripts/
 
 # Data Monitoring
 /analog-delivery-monitoring/templates/
