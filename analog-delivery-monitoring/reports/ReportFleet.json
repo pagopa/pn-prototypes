@@ -59,6 +59,25 @@
           "entry": "SlaReport"
         }
       }
+    },
+    {
+      "name": "Not Managed By Shipper Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "chron": "DAILY",
+      "partitions": 1,
+      "partitionBy": [
+        "year_affido_recapitista",
+        "month_affido_recapitista"
+      ],
+      "task": {
+        "name": "Build Not Managed By Shipper Report",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/NotManagedByShipperReport.sql",
+          "entry": "NotManagedByShipperReport"
+        }
+      }
     }
   ]
 }
