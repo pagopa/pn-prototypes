@@ -66,7 +66,7 @@
       "outputFormat": "CSV",
       "chron": "DAILY",
       "partitions": 1,
-      "partitionBy": [
+      "partitionKeys": [
         "year_affido_recapitista",
         "month_affido_recapitista"
       ],
@@ -85,7 +85,7 @@
       "outputFormat": "CSV",
       "chron": "DAILY",
       "partitions": 1,
-      "partitionBy": [
+      "partitionKeys": [
         "year_affido_consolidatore",
         "month_affido_consolidatore"
       ],
