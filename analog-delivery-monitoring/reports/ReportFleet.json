@@ -78,6 +78,25 @@
           "entry": "NotManagedByShipperReport"
         }
       }
+    },
+    {
+      "name": "Dropped But Not Cancelled Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "chron": "DAILY",
+      "partitions": 1,
+      "partitionBy": [
+        "year_affido_consolidatore",
+        "month_affido_consolidatore"
+      ],
+      "task": {
+        "name": "Build Dropped But Not Cancelled Report",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/DroppedButNotCancelledReport.sql",
+          "entry": "DroppedButNotCancelledReport"
+        }
+      }
     }
   ]
 }
