@@ -65,11 +65,11 @@ create or replace temporary view completeUpdatedEcMetadata as
         t.iun AS iun,
         t.timelineElementId AS timelineElementId,
         named_struct (
-          'timeline_zip', get_json_object( t.details_str, '$.physicalAddress.M.zip.S'),
-          'timeline_state', get_json_object( t.details_str, '$.physicalAddress.M.foreignState.S'),
-          'paper_analogCost', get_json_object( t.details_str, '$.analogCost.N'),
-          'paper_envelopeWeight', get_json_object( t.details_str, '$.envelopeWeight.N'),
-          'paper_numberOfPages', get_json_object( t.details_str, '$.numberOfPages.N'),
+          'timeline_zip', get_json_object( t.details, '$.physicalAddress.M.zip.S'),
+          'timeline_state', get_json_object( t.details, '$.physicalAddress.M.foreignState.S'),
+          'paper_analogCost', get_json_object( t.details, '$.analogCost.N'),
+          'paper_envelopeWeight', get_json_object( t.details, '$.envelopeWeight.N'),
+          'paper_numberOfPages', get_json_object( t.details, '$.numberOfPages.N'),
           'paid', t.paid
         )
          AS semplified_timeline_details,
