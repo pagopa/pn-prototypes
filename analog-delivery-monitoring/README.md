@@ -218,6 +218,48 @@ $QueryMetadata
 SELECT * FROM myView2 mv2 WHERE mv2.id = 10
 ```
 
+### Query execution caching
+Why cache is useful?
+Every report contributes to the building of a graph in which many nodes can depend on others with some degree of reuse;
+moreover, every report may differ by only one node, sharing a huge subgraph.
+Often these nodes are temporary views, so they are executed for each dependency losing time repeating each time the
+same work.
+
+In order to increase performance we are able to cache the execution of these nodes, reducing the time needed to
+create all reports.
+In particular, every node is cached when its in-degree is >= 2, so it means that a node is cached when at least 2 nodes
+depend on it. This is a heuristic strategy, so it is possible to find a better one that increase performance.
+
+Moreover, cache can be disabled at task level using `persist` parameter; it can be useful when we want to execute
+nodes without caching results or to avoid issues introduced by caching that node.
+
+Every cached node is cached in memory using the `Dataset<Row>` data structure, so it will be evicted as soon as
+code build run finishes.
+
+#### Caching example
+
+```mermaid
+graph TD;
+    myView["`myView 
+    (_caching_)`"
+    ]
+    
+    selectAll-->myView;
+    selectAll-->sourceParquet;
+    selectAll2-->myView
+    selectAll3-->myView
+    myView-->connectedSubGraph;
+
+    subgraph connectedSubGraph
+        task1<-..->taskN    
+    end
+style myView fill:#f96
+```
+
+In this example `myView` is a good node to cache as other three depend on it;
+by caching `myView` we have cached the connected subgraph that is a dependency of it, so we don't have to
+re-execute all the tasks within this connected component.
+
 ## How to launch new report
 Every new report that use DAG structure must use the `TaskDagExecutorCommand` class 
 annotated with `@Command(name = "taskDagExecutor")` of _picocli_ library.  
