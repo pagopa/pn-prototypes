@@ -219,7 +219,7 @@ SELECT * FROM myView2 mv2 WHERE mv2.id = 10
 ```
 
 ### Query execution caching
-Why cache is useful?
+_Why cache is useful?_
 Every report contributes to the building of a graph in which many nodes can depend on others with some degree of reuse;
 moreover, every report may differ by only one node, sharing a huge subgraph.
 Often these nodes are temporary views, so they are executed for each dependency losing time repeating each time the
@@ -233,8 +233,9 @@ depend on it. This is a heuristic strategy, so it is possible to find a better o
 Moreover, cache can be disabled at task level using `persist` parameter; it can be useful when we want to execute
 nodes without caching results or to avoid issues introduced by caching that node.
 
-Every cached node is cached in memory using the `Dataset<Row>` data structure, so it will be evicted as soon as
-code build run finishes.
+Every node is cached in memory using the `Dataset<Row>` data structure, so it will be evicted as soon as
+code build run finishes. By using this approach we are isolating the cache store between each codebuild execution
+to simplify cache evict management.
 
 #### Caching example
 
