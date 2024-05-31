@@ -4,7 +4,7 @@
       "name": "Shipper Product Reliability Report",
       "version": "1.0",
       "outputFormat": "CSV",
-      "chron": "DAILY",
+      "cron": "DAILY",
       "partitions": 1,
       "task": {
         "name": "Build Shipper Reliability Report Grouped By <shipper, product>",
@@ -19,7 +19,7 @@
       "name": "Shipper Product Lot Reliability Report",
       "version": "1.0",
       "outputFormat": "CSV",
-      "chron": "DAILY",
+      "cron": "DAILY",
       "partitions": 1,
       "task": {
         "name": "Build Shipper Reliability Report Grouped By <shipper, product, lot>",
@@ -34,7 +34,7 @@
       "name": "Shipper Product Lot Cap Reliability Report",
       "version": "1.0",
       "outputFormat": "CSV",
-      "chron": "DAILY",
+      "cron": "DAILY",
       "partitions": 1,
       "task": {
         "name": "Build Shipper Reliability Report Grouped By <shipper, product, lot, cap>",
@@ -49,7 +49,7 @@
       "name": "SLA Report",
       "version": "1.0",
       "outputFormat": "PARQUET",
-      "chron": "DAILY",
+      "cron": "DAILY",
       "partitions": 0,
       "task": {
         "name": "Build SLA Report",
@@ -57,6 +57,44 @@
         "script": {
           "path": "analog-delivery-monitoring/queries/SlaReport.sql",
           "entry": "SlaReport"
+        }
+      }
+    },
+    {
+      "name": "Not Managed By Shipper Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "cron": "DAILY",
+      "partitions": 1,
+      "partitionKeys": [
+        "year_affido_recapitista",
+        "month_affido_recapitista"
+      ],
+      "task": {
+        "name": "Build Not Managed By Shipper Report",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/NotManagedByShipperReport.sql",
+          "entry": "NotManagedByShipperReport"
+        }
+      }
+    },
+    {
+      "name": "Dropped But Not Cancelled Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "cron": "DAILY",
+      "partitions": 1,
+      "partitionKeys": [
+        "year_affido_consolidatore",
+        "month_affido_consolidatore"
+      ],
+      "task": {
+        "name": "Build Dropped But Not Cancelled Report",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/DroppedButNotCancelledReport.sql",
+          "entry": "DroppedButNotCancelledReport"
         }
       }
     }

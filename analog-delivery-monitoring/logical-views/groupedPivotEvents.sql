@@ -2,7 +2,6 @@
 $QueryMetadata
 {
     "name": "groupedPivotEvents",
-    "persist": false,
     "dependencies": [
     	{
             "name": "rankedEvents",

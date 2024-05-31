@@ -2,7 +2,6 @@
 $QueryMetadata
 {
     "name": "completeUpdatedEcMetadata",
-    "persist": false,
     "dependencies": [
         {
             "name": "incremental_ec_metadta__fromfile",

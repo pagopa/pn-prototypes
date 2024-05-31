@@ -2,7 +2,6 @@
 $QueryMetadata
 {
     "name": "rankedEvents",
-    "persist": false,
     "dependencies": [
         {
             "name": "completeUpdatedEcMetadata",
