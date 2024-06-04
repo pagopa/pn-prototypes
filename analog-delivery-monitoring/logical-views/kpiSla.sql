@@ -77,7 +77,7 @@ create or replace temporary view kpiSla as
 		    element_at(transform(
 		      filter(c.ec_metadata.event_list,
 		      	e -> e.paperProg_statusCode in ( 'RECRS001C', 'RECRS002A','RECRS002D','RECRN001A','RECRN002A','RECRN002D','RECAG001A','RECAG002A','RECAG003A','RECAG003D',
-		       									 'RECRS010', 'RECNS010', 'RECAG010',
+		       									 'RECRS010', 'RECRN010', 'RECAG010',
 		       									 'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013',
 														 'RECRSI001', 'RECRI001', 'RECRSI005', 'RECRI005'
 		       								)
