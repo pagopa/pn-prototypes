@@ -97,6 +97,25 @@
           "entry": "DroppedButNotCancelledReport"
         }
       }
+    },
+    {
+      "name": "Missing Demat 23L Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "cron": "DAILY",
+      "partitions": 1,
+      "partitionKeys": [
+        "year_affido_consolidatore",
+        "month_affido_consolidatore"
+      ],
+      "task": {
+        "name": "Build Missing Demat 23L Report",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/MissingDemat23LReport.sql",
+          "entry": "MissingDemat23LReport"
+        }
+      }
     }
   ]
 }
