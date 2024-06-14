@@ -97,6 +97,24 @@
           "entry": "DroppedButNotCancelledReport"
         }
       }
+    },
+    {
+      "name": "Incomplete Shipments Report",
+      "version": "1.0",
+      "outputFormat": "CSV",
+      "cron": "DAILY",
+      "partitions": 1,
+      "partitionKeys": [
+        "recapitistaUnified"
+      ],
+      "task": {
+        "name": "Build Incomplete Shipments Report",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/IncompleteShipments.sql",
+          "entry": "IncompleteShipments"
+        }
+      }
     }
   ]
 }
