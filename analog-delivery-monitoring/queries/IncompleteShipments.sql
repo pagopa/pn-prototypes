@@ -15,6 +15,7 @@ WITH NonCompletate AS (
 	FROM kpiSla ks
 	WHERE ks.fine_recapito_stato IS NULL
 		AND ks.ente_id != '4a4149af-172e-4950-9cc8-63ccc9a6d865'
+		AND ks.recapitista IS NOT NULL
 ), TentativoRecapito AS (
 	SELECT
 		nc.*,
