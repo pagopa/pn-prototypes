@@ -13,7 +13,7 @@ $QueryMetadata
         },
         {
             "name": "matrice_costi",
-            "location": "analog-delivery-monitoring/source-views/matriceCosti2023Pivot.sql"
+            "location": "analog-delivery-monitoring/source-views/matriceCostiPivot.sql"
         }
     ]
 }
@@ -93,13 +93,14 @@ create or replace temporary view completeUpdatedEcMetadata as
           'costo_scaglione', c.costo,
           'costo_plico', c.costo_plico,
           'costo_foglio', c.costo_foglio,
-          'costo_demat', c.costo_demat
+          'costo_demat', c.costo_demat,
+          'version', c.tenderVersion
         )
          as costi_recapito
       from
         ecmetadata_with_timeline et
-        left join matrice_costi c on
-            et.ec_metadata.paperMeta_productType = c.product
+        left join matrice_costi c ON
+            et.ec_metadata.paperMeta_productType = c.product AND (et.ec_metadata.requestTimestamp BETWEEN c.startDate AND c.endDate)
           and
             c.geokey =
             (
