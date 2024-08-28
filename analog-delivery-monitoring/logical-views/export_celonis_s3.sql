@@ -25,7 +25,7 @@ $QueryMetadata
         {
             "name": "set_utc_tmezone",
             "location": "analog-delivery-monitoring/logical-views/export_celonis_s3.sql"
-        },
+        }
     ]
 }
 */
