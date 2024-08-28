@@ -10,7 +10,7 @@ $QueryMetadata
     ]
 }
 */
-select /*+ COALESCE(100) */
+select 
   paper_request_id,
   semplified_timeline_details.paid as semplified_timeline__paid,
   iun,
@@ -85,7 +85,7 @@ with events as (
   from
     selectedUpdatedEcMetadata
   )
-select /*+ COALESCE(100) */
+select 
   paper_request_id || '__' || lpad( pos, 4, '0') as id,
   paper_request_id,
   pos as event_idx,
@@ -151,7 +151,7 @@ with
     from
       events
   )
-select /*+ COALESCE(100) */
+select 
   paper_request_id || '__' || lpad( event_idx, 4, '0') || '__' || lpad( col.id, 4, '0') as id,
   paper_request_id || '__' || lpad( event_idx, 4, '0') as event_id,
   paper_request_id,
