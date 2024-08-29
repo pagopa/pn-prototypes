@@ -1,0 +1,49 @@
+{
+  "reports": [
+    {
+      "name": "celonis_export_paper_requests",
+      "version": "0.1",
+      "outputFormat": "CSV",
+      "cron": "DAILY",
+      "partitions": 1,
+      "task": {
+        "name": "celonis_export_paper_requests",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/export_celonis_s3.sql",
+          "entry": "celonis_export_paper_requests"
+        }
+      }
+    },
+    {
+      "name": "celonis_export_event_list",
+      "version": "0.1",
+      "outputFormat": "CSV",
+      "cron": "DAILY",
+      "partitions": 1,
+      "task": {
+        "name": "celonis_export_event_list",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/export_celonis_s3.sql",
+          "entry": "celonis_export_event_list"
+        }
+      }
+    },
+    {
+      "name": "celonis_export_event_list_document_type",
+      "version": "0.1",
+      "outputFormat": "CSV",
+      "cron": "DAILY",
+      "partitions": 1,
+      "task": {
+        "name": "celonis_export_event_list_document_type",
+        "type": "SQL",
+        "script": {
+          "path": "analog-delivery-monitoring/queries/export_celonis_s3.sql",
+          "entry": "celonis_export_event_list_document_type"
+        }
+      }
+    }    
+  ]
+}

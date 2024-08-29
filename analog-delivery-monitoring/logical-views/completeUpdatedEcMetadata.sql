@@ -64,7 +64,18 @@ create or replace temporary view completeUpdatedEcMetadata as
         e.requestid AS paper_request_id,
         t.iun AS iun,
         t.timelineElementId AS timelineElementId,
+        t.notificationsentat,
         named_struct (
+          'timeline_recipient_index', cast( get_json_object( t.details, '$.recIndex.N') as integer),
+          'timeline_peso_gr_min', CASE
+                WHEN cast( get_json_object( t.details, '$.envelopeWeight.N') as integer) BETWEEN 1 AND 20 THEN 1
+                WHEN cast( get_json_object( t.details, '$.envelopeWeight.N') as integer) BETWEEN 21 AND 50 THEN 21
+                WHEN cast( get_json_object( t.details, '$.envelopeWeight.N') as integer) BETWEEN 51 AND 100 THEN 51
+                WHEN cast( get_json_object( t.details, '$.envelopeWeight.N') as integer) BETWEEN 101 AND 250 THEN 101
+                WHEN cast( get_json_object( t.details, '$.envelopeWeight.N') as integer) BETWEEN 251 AND 350 THEN 251
+                WHEN cast( get_json_object( t.details, '$.envelopeWeight.N') as integer) BETWEEN 351 AND 1000 THEN 351
+                WHEN cast( get_json_object( t.details, '$.envelopeWeight.N') as integer) BETWEEN 1001 AND 2000 THEN 1001
+              END,
           'timeline_zip', get_json_object( t.details, '$.physicalAddress.M.zip.S'),
           'timeline_state', get_json_object( t.details, '$.physicalAddress.M.foreignState.S'),
           'paper_analogCost', get_json_object( t.details, '$.analogCost.N'),
@@ -94,7 +105,11 @@ create or replace temporary view completeUpdatedEcMetadata as
           'costo_plico', c.costo_plico,
           'costo_foglio', c.costo_foglio,
           'costo_demat', c.costo_demat,
-          'version', c.tenderVersion
+          'version', c.tenderVersion,
+          'max', c.max,
+          'min', c.min,
+          'product', et.ec_metadata.paperMeta_productType,
+          'costo_base_20gr', c.costo_base_20gr
         )
          as costi_recapito
       from
@@ -126,7 +141,11 @@ create or replace temporary view completeUpdatedEcMetadata as
             )
     )
 select
-    *
+    *,
+    year(notificationsentat) as notification_year,
+    month(notificationsentat) as notification_month,
+    day(notificationsentat) as notification_day,
+    ec_metadata.dynamoExportName
 FROM
     ecmetadata_with_timeline_and_costi
 where
