@@ -1,0 +1,260 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Actions storage
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Nome dell'ambiente destinazione
+    Default: pn # To be removed
+
+  # Unused but required by CD pipeline
+  MicroserviceNumber:
+    Type: Number
+    Description: unused
+    Default: 41 # To be removed
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: URL da cui caricare i frammenti di template di infrastruttura
+    Default: ''  # To be removed
+  
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+    Default: '0.0.0.0.0.0.1' # To be removed
+  
+  AlarmSNSTopicArn:
+    Type: String
+    Description: 'Topic alarm ARN'
+    Default: 'arn:aws:sns:eu-central-1:830192246553:FakeAlarmTopic' # To be removed
+  
+  AlarmSNSTopicName:
+    Type: String
+    Description: 'Topic alarm name'
+    Default: 'FakeAlarmTopic'  # To be removed
+
+
+
+Resources:
+
+  EventBridgeToInputEventsRule:
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: Rewrite this rule with pn-infra standard, used only to test Pattern.
+      RoleArn: !GetAtt "EventBusEnqueueRole.Arn"
+      EventPattern:
+        detail-type: [ "ExternalChannelOutcomeEvent" ]
+        detail: 
+          analogMail:
+            statusCode: [ "CON020" ]
+      Targets: 
+        - Id: !Sub '${ProjectName}-CoreEventBus-Con020-to-enricher'
+          Arn: !GetAtt InputEventsQueue.Outputs.QueueARN
+          InputPath: '$.detail'
+          #DeadLetterConfig: 
+            #Arn: !GetAtt EventBusDeadLetterQueue.Arn
+
+  EventBusEnqueueRole: # Risorsa già presente in pn-infra
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: putEventIntoQueues
+          PolicyDocument:
+            Statement:
+              - Sid: putEvents
+                Action:
+                  - sqs:ChangeMessageVisibility
+                  - sqs:ChangeMessageVisibilityBatch
+                  - sqs:GetQueueAttributes
+                  - sqs:GetQueueUrl
+                  - sqs:SendMessage
+                  - sqs:SendMessageBatch
+                Effect: Allow
+                Resource: 
+                  - !GetAtt InputEventsQueue.Outputs.QueueARN
+  
+  InputEventsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !GetAtt InputEventsQueue.Outputs.QueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: "SendEventsToDLQ"
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "events.amazonaws.com"
+            Action: 
+              - "SQS:SendMessage"
+            Resource:
+              - !GetAtt InputEventsQueue.Outputs.QueueARN
+  
+  InputEventsQueue:   # Move resource into pn-infra
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain   
+    Properties:
+      # TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"  # RIPRISTINARE
+      TemplateURL: "fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-paper-event-enrichment-input'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName        
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+  
+  PaperEventEnrichmentTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain   
+    Properties:
+      TableName: !Sub '${ProjectName}-PaperChannelEventEnrichment'
+      AttributeDefinitions:
+        - AttributeName: "hashKey"
+          AttributeType: "S"
+        - AttributeName: "sortKey"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "hashKey"
+          KeyType: "HASH"
+        - AttributeName: "sortKey"
+          KeyType: "RANGE"
+      BillingMode: "PAY_PER_REQUEST"
+      KinesisStreamSpecification:
+        StreamArn: !GetAtt PaperEventEnrichmentCdc.Outputs.KinesisStreamArn
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  PaperEventEnrichmentCdc:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      # TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/kinesis-data-stream.yaml" # RIPRISTINARE
+      TemplateURL: "fragments/kinesis-data-stream.yaml"
+      Parameters:
+        StreamName: !Sub "${ProjectName}-paper-event-enrichment-cdc"
+        # PROVISIONED MODE: follow shard configuration
+        StreamShardsCount: 0
+        StreamRetentionHours: 720
+        RequireManagedKey: false
+        # USES SNSTopic used for all Kinesis alarms
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        StandardAlarmThresholdsMs: 172800000 # 2 days
+        OnCallAlarmThresholdsMs: 432000000  # 5 days
+
+  PaperEventCdcToArchivesQueuePipe:
+    Type: 'AWS::Pipes::Pipe'
+    Properties:
+      Name: !Sub "${ProjectName}-enriched-paper-event-to-archive-query"
+      RoleArn: !GetAtt "PipesEnqueueRole.Arn"
+      Source: !GetAtt "PaperEventEnrichmentCdc.Outputs.KinesisStreamArn"
+      SourceParameters:
+        KinesisStreamParameters:
+          BatchSize: 1
+          StartingPosition: LATEST
+        FilterCriteria:
+          Filters:
+            - Pattern: |
+                {
+                  "data": {
+                    "eventName": ["INSERT"],
+                    "dynamodb": {
+                      "NewImage": {
+                        "entityName": {"S": [ "CON020Archive"] }
+                      }
+                    }
+                  }
+                }
+      TargetParameters:
+        InputTemplate: |
+          {
+            "archiveFileKey": <$.data.dynamodb.NewImage.archiveFileKey.S>,
+            "archiveStatus": <$.data.dynamodb.NewImage.archiveStatus.S>
+          }
+      Target: !GetAtt 'PaperArchivesQueue.Outputs.QueueARN'
+  
+  PipesEnqueueRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: pipes.amazonaws.com
+            Condition:
+              StringLike:
+                'aws:SourceArn': !Sub 'arn:${AWS::Partition}:pipes:${AWS::Region}:${AWS::AccountId}:pipe/${ProjectName}-enriched-paper-event-to-*'
+                'aws:SourceAccount': !Ref 'AWS::AccountId'
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: putEventIntoQueues
+          PolicyDocument:
+            Statement:
+              - Sid: sourcePermissions
+                Action:
+                  - 'kinesis:DescribeStream'
+                  - 'kinesis:GetRecords'
+                  - 'kinesis:GetShardIterator'
+                  - 'kinesis:ListStreams'
+                  - 'kinesis:ListShards'
+                Effect: Allow
+                Resource: 
+                  - !GetAtt PaperEventEnrichmentCdc.Outputs.KinesisStreamArn
+              - Sid: targetPermissions
+                Action:
+                  - sqs:ChangeMessageVisibility
+                  - sqs:ChangeMessageVisibilityBatch
+                  - sqs:GetQueueAttributes
+                  - sqs:GetQueueUrl
+                  - sqs:SendMessage
+                  - sqs:SendMessageBatch
+                Effect: Allow
+                Resource: 
+                  - !GetAtt PaperArchivesQueue.Outputs.QueueARN
+                  - !GetAtt EnrichedEventsQueue.Outputs.QueueARN
+  
+
+  PaperArchivesQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain   
+    Properties:
+      # TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"  # RIPRISTINARE
+      TemplateURL: "fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-paper-archives'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName        
+        VisibilityTimeout: 900
+        MaxReceiveCount: 1
+        DelaySeconds: 1
+  
+  EnrichedEventsQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain   
+    Properties:
+      # TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"  # RIPRISTINARE
+      TemplateURL: "fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-paper-event-enrichment-output'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName        
+        VisibilityTimeout: 60
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+  
+
