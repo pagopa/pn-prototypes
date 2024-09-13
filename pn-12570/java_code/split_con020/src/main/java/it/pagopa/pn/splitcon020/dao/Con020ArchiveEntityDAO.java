@@ -46,7 +46,7 @@ public class Con020ArchiveEntityDAO {
             this.dynamo.updateItem( builder.build() );
         }
         catch (ConditionalCheckFailedException exc) {
-            log.warn("Duplicated archive entity archiveFileKey=" + archiveFileKey + ": ", exc );
+            log.info("New event for existing archive entity archiveFileKey=" + archiveFileKey );
         }
     }
 
