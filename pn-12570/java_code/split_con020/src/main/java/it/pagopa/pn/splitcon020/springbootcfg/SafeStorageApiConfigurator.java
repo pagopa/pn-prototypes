@@ -4,6 +4,7 @@ import it.pagopa.pn.commons.pnclients.RestTemplateFactory;
 import it.pagopa.pn.splitcon020.PnSplitCon020Configs;
 import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.ApiClient;
 import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.api.FileDownloadApi;
+import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.api.FileMetadataUpdateApi;
 import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.api.FileUploadApi;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,14 @@ public class SafeStorageApiConfigurator extends RestTemplateFactory {
             PnSplitCon020Configs cfg
     ) {
         return new FileUploadApi( getNewApiClient( restTemplate, cfg) );
+    }
+
+    @Bean @Primary
+    public FileMetadataUpdateApi fileMetadataUpdate(
+            @Qualifier("withTracing") RestTemplate restTemplate,
+            PnSplitCon020Configs cfg
+    ) {
+        return new FileMetadataUpdateApi( getNewApiClient( restTemplate, cfg) );
     }
 
     @Bean @Primary

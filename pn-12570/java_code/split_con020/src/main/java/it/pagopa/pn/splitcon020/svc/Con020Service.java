@@ -29,8 +29,11 @@ public class Con020Service {
 
     public void receiveInputEvent( Con020InputEventDto con020EventFromExtCh ) {
         System.out.println( "CON020 INPUT EVENT " + con020EventFromExtCh );
-        con020EvtDao.saveInputEventMetadata( con020EventFromExtCh );
-        con020ArcDao.saveArchiveIfNotExsists( con020EventFromExtCh.getAttachmentFileKey() );
+
+        if( ! isCallCenterEvoluto( con020EventFromExtCh ) ) {
+            con020EvtDao.saveInputEventMetadata( con020EventFromExtCh );
+            con020ArcDao.saveArchiveIfNotExsists( con020EventFromExtCh.getAttachmentFileKey() );
+        }
     }
 
     public void startArchiveProcessing( Con020NewArchiveDto con020NewArchive ) {
@@ -61,11 +64,18 @@ public class Con020Service {
         con020ArcDao.updateStatus( con020NewArchive.getArchiveFileKey(), "PROCESSED" );
     }
 
+    private boolean isCallCenterEvoluto( Con020InputEventDto inputEvt) {
+        String requestId = inputEvt.getAnalogMail().getRequestId();
+        return requestId.startsWith( "SERVICE_DESK_OPID-" );
+    }
 
     private class Con020ArchiveReader extends AbstractCon020ArchiveReader {
         @Override
         protected String uploadPdfToSafeStorage(String name, byte[] pdfBytes, String archiveId) {
-            return Con020Service.this.safeStorage.uploadPdf( pdfBytes );
+            System.out.println( "Upload PDF " + name + " extracted from " + archiveId + " ..." );
+            String fileKey = Con020Service.this.safeStorage.uploadPdf( pdfBytes );
+            System.out.println( "Upload PDF " + name + " extracted from " + archiveId + " ... DONE!!" );
+            return fileKey;
         }
     }
 

@@ -4,9 +4,11 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.exceptions.PnRuntimeException;
 import it.pagopa.pn.splitcon020.PnSplitCon020Configs;
 import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.api.FileDownloadApi;
+import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.api.FileMetadataUpdateApi;
 import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.api.FileUploadApi;
 import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.model.FileCreationRequest;
 import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.model.FileCreationResponse;
+import it.pagopa.pn.splitcon020.generated.openapi.msclient.safestorage.model.UpdateFileMetadataRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.core.io.ByteArrayResource;
@@ -29,16 +31,19 @@ import java.util.Collections;
 public class SafeStorageClientService {
 
     private final FileDownloadApi fileDownloadApi;
+    private final FileMetadataUpdateApi fileMetadataUpdateApi;
     private final FileUploadApi fileUploadApi;
 
     private final PnSplitCon020Configs cfg;
 
     public SafeStorageClientService(
             FileDownloadApi fileDownloadApi,
+            FileMetadataUpdateApi fileMetadataUpdateApi,
             FileUploadApi fileUploadApi,
             PnSplitCon020Configs cfg
     ) {
         this.fileDownloadApi = fileDownloadApi;
+        this.fileMetadataUpdateApi = fileMetadataUpdateApi;
         this.fileUploadApi = fileUploadApi;
         this.cfg = cfg;
     }
@@ -61,8 +66,23 @@ public class SafeStorageClientService {
         }
     }
 
-    public void changeStatusToPdf(String pdfSafeStorageFileKey, String attached) {
-        
+    public void changeStatusToPdf(String pdfSafeStorageFileKey, String newStatus ) {
+
+        /*UpdateFileMetadataRequest request = new UpdateFileMetadataRequest();
+        request.setStatus( newStatus );
+
+        try {
+            // - Lasciamo il tempo a safestorage di aggiornarsi le sue cache interne
+            Thread.sleep( 20 * 1000l);
+        } catch (InterruptedException exc) {
+            throw new PnRuntimeException( "", "", 500, Collections.emptyList(), exc );
+        }
+
+        fileMetadataUpdateApi.updateFileMetadata(
+                pdfSafeStorageFileKey,
+                cfg.getSafeStorageUser(),
+                request
+            );*/
     }
 
     public String uploadPdf(byte[] pdfBytes) {
@@ -70,7 +90,7 @@ public class SafeStorageClientService {
         FileCreationRequest fileCreationRequest = new FileCreationRequest();
         fileCreationRequest.setContentType("application/pdf");
         fileCreationRequest.setDocumentType("PN_PRINTED");
-        fileCreationRequest.setStatus("PRELOADED");
+        fileCreationRequest.setStatus("ATTACHED");
 
         String sha256 = computeSha256( pdfBytes );
 
