@@ -159,7 +159,7 @@ Resources:
   PaperEventCdcToArchivesQueuePipe:
     Type: 'AWS::Pipes::Pipe'
     Properties:
-      Name: !Sub "${ProjectName}-enriched-paper-event-to-archive-query"
+      Name: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
       RoleArn: !GetAtt "PipesEnqueueRole.Arn"
       Source: !GetAtt "PaperEventEnrichmentCdc.Outputs.KinesisStreamArn"
       SourceParameters:
@@ -243,6 +243,50 @@ Resources:
         MaxReceiveCount: 1
         DelaySeconds: 1
   
+
+  PaperEventCdcToEnrichedEventsQueuePipe:
+    Type: 'AWS::Pipes::Pipe'
+    Properties:
+      Name: !Sub "${ProjectName}-enriched-paper-event-to-output-queue"
+      RoleArn: !GetAtt "PipesEnqueueRole.Arn"
+      Source: !GetAtt "PaperEventEnrichmentCdc.Outputs.KinesisStreamArn"
+      SourceParameters:
+        KinesisStreamParameters:
+          BatchSize: 1
+          StartingPosition: LATEST
+        FilterCriteria:
+          Filters:
+            - Pattern: |
+                {
+                  "data": {
+                    "eventName": [ "MODIFY" ],
+                    "dynamodb": {
+                      "NewImage": {
+                        "entityName": { "S": [ "CON020Enriched"] },
+                        "printedPdf": { "S": [ { "exists": true } ] },
+                        "metadataPresent": { "BOOL": [ true ] }
+                      }
+                    }
+                  }
+                }
+      TargetParameters:
+        InputTemplate: |
+          {
+            "entityName": <$.data.dynamodb.NewImage.entityName.S>,
+            "recordCreationTime": <$.data.dynamodb.NewImage.recordCreationTime.S>,
+            "lastModificationTime": <$.data.dynamodb.NewImage.lastModificationTime.S>,
+            "archiveFileKey": <$.data.dynamodb.NewImage.metadata.M.archiveFileKey.S>,
+            "eventTime": <$.data.dynamodb.NewImage.metadata.M.eventTime.S>,
+            "generationTime": <$.data.dynamodb.NewImage.metadata.M.generationTime.S>,
+            "iun": <$.data.dynamodb.NewImage.metadata.M.iun.S>,
+            "recIndex": <$.data.dynamodb.NewImage.metadata.M.recIndex.N>,
+            "registeredLetterCode": <$.data.dynamodb.NewImage.metadata.M.registeredLetterCode.S>,
+            "sendRequestId": <$.data.dynamodb.NewImage.metadata.M.sendRequestId.S>,
+            "printedPdf": <$.data.dynamodb.NewImage.printedPdf.S>
+          }
+      Target: !GetAtt 'EnrichedEventsQueue.Outputs.QueueARN'
+  
+
   EnrichedEventsQueue:
     Type: AWS::CloudFormation::Stack
     UpdateReplacePolicy: Retain
