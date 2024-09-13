@@ -74,6 +74,7 @@ public class Con020EnrichedEntityDAO {
                 .key( buildDynamoKey( inputEvent ) )
                 .baseUpdateRequestAttribute( Instant.now(), "CON020Enriched" )
                 .updateIfFieldNotExists("metadata", buildMetadata( inputEvent ))
+                .updateField("metadataPresent",  AttributeValue.fromBool( true ))
             ;
 
         try {
