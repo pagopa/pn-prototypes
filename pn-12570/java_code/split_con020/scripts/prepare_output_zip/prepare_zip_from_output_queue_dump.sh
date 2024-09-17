@@ -52,9 +52,14 @@ do
   paId=$( aws $aws_command_base_args dynamodb get-item --table-name pn-Notifications \
       --key '{ "iun": {"S": "'${iun}'"} }' | jq -r '.Item.senderPaId.S' )
 
+  echo ""
   if ( [ "$paId" = "$selectedPaId" ] ) then
-    csv_line="${iun};${recIndex};${sendRequestId};${generationTime};${eventTime};${registeredLetterCode};${printedPdf}"
-    echo "Msg: $csv_line"
+    outputRequestId=$( echo $sendRequestId \
+                | sed -e 's/PREPARE_ANALOG/SEND_ANALOG/' -e 's/PREPARE_SIMPLE_/SEND_SIMPLE_/' \
+                | sed -e 's/\.PCRETRY_[0-9][0-9]*//' )
+    echo "Transform eventRequestId to timelineRequestId : ${sendRequestId} --> ${outputRequestId}"
+    csv_line="${iun};${recIndex};${outputRequestId};${generationTime};${eventTime};${registeredLetterCode};${printedPdf}"
+    echo "CSV line: $csv_line"
     echo "$csv_line" >> ${tmp_dir}/zip_content/index.csv
 
 
