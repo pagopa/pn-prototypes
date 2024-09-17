@@ -302,3 +302,163 @@ Resources:
         DelaySeconds: 1
   
 
+  PipeAlarm: # Da mettere in un frammento (o in una trasformazione) assieme all definizione della pipe
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue-alarm"
+      AlarmDescription: "Alarm on pipe failure"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 5
+      EvaluationPeriods: 10
+      Threshold: 1
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: m1
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionThrottled
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m2
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionTimeout
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m3
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionFailed
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m4
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionPartiallyFailed
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m5
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: Invocations
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: e1
+          Expression: ( m1 + m2 + m3 + m4 ) / m5
+          Label: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue-pipe-ratio"
+          ReturnData: False
+        - Id: e2
+          Expression: !Sub IF( e1 > 0.1 AND m5 > 0, 1, 0)
+          Label: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue-pipe-metric"
+      AlarmActions:
+        - !Sub '${AlarmSNSTopicArn}'
+      InsufficientDataActions:
+        - !Sub '${AlarmSNSTopicArn}'
+      OKActions:
+        - !Sub '${AlarmSNSTopicArn}'
+
+
+  OnCallPipeAlarm: # Da mettere in un frammento (o in una trasformazione) assieme all definizione della pipe
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "oncall-${ProjectName}-enriched-paper-event-to-archive-queue-alarm"
+      AlarmDescription: "OnCall Alarm on pipe failure"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 5
+      EvaluationPeriods: 10
+      Threshold: 1
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: m1
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionThrottled
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m2
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionTimeout
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m3
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionFailed
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m4
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: ExecutionPartiallyFailed
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: m5
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: PipeName
+                  Value: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue"
+              MetricName: Invocations
+              Namespace: AWS/SQS
+            Period: 60
+            Stat: Sum
+          ReturnData: False
+        - Id: e1
+          Expression: ( m1 + m2 + m3 + m4 ) / m5
+          Label: !Sub "${ProjectName}-enriched-paper-event-to-archive-queue-pipe-ratio"
+          ReturnData: False
+        - Id: e2
+          Expression: !Sub IF( e1 > 0.2 AND m5 > 20, 1, 0)
+          Label: !Sub "OnCall-${ProjectName}-enriched-paper-event-to-archive-queue-pipe-metric"
+      AlarmActions:
+        - !Sub '${AlarmSNSTopicArn}'
+      InsufficientDataActions:
+        - !Sub '${AlarmSNSTopicArn}'
+      OKActions:
+        - !Sub '${AlarmSNSTopicArn}'
