@@ -25,7 +25,7 @@ $QueryMetadata
 CREATE OR REPLACE TEMPORARY VIEW matrice_costi_2024
 USING csv
 OPTIONS (
-  path "s3a://${CORE_BUCKET}/external/matrice_costi/matrice_costi_202408_pivot.csv.gz",
+  path "s3://${CORE_BUCKET}/external/matrice_costi/matrice_costi_202408_pivot_v202410.csv.gz",
   header true
 );
 
