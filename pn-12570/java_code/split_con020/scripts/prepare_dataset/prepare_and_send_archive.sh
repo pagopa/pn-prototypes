@@ -10,9 +10,9 @@ cleanup() {
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
-api_endpoint=localhost:9090
+api_endpoint=localhost:8889
 aws_profile=sso_pn-core-dev
-aws_region=eu-central-1
+aws_region=eu-south-1
 
 
 input_csv_path=${script_dir}/input.csv
@@ -27,30 +27,30 @@ mkdir -p ${tmp_dir}/p7m_content
 
 echo "ORC40018faa|FLUSSOSTAMPA_005_003_25_2501_RS_ORC40018faa.PDZ|Z0090998|PPA|3|RS|D|005|003||BW" > $bol_file
 
-while read -r line
-do
-  requestId=$( echo $line | sed -e 's/;.*//' )
-  registeredLetterCode=$( echo $line | sed -e 's/[^;]*;//' | sed -e 's/;.*//' )
-  prodType=$( echo $line | sed -e 's/[^;]*;[^;]*;//' | sed -e 's/;.*//' )
-  dateTime=$( echo $line | sed -e 's/[^;]*;[^;]*;[^;]*;//' | sed -e 's/;.*//' )
-  rnd=$( uuidgen | tr -d '-' )
-
-  echo "RequestId:$requestId code:$registeredLetterCode type:$prodType  on $dateTime"
-  echo "${rnd}.pdf||15376371009|${requestId}|||${registeredLetterCode}||||1|" >> $bol_file
-
-  echo "" > ${tmp_dir}/testo.txt
-  echo "RequestId:" >> ${tmp_dir}/testo.txt
-  echo $requestId | sed -e 's/IUN.*//' | sed -e 's/^/  /' >> ${tmp_dir}/testo.txt
-  echo $requestId | sed -e 's/.*IUN_/        IUN_/' >> ${tmp_dir}/testo.txt
-
-  echo "code:$registeredLetterCode" >> ${tmp_dir}/testo.txt
-  echo "type:$prodType" >> ${tmp_dir}/testo.txt
-  convert  TEXT:${tmp_dir}/testo.txt ${tmp_dir}/p7m_content/${rnd}.pdf
-
-done < <( cat $input_csv_path | sed 1d )
-
-( cd ${tmp_dir}/p7m_content/ && zip -r ../FLUSSO_STAMPA.PDZ.p7m * )
-( cd ${tmp_dir}/ && zip -r ${tmp_dir}/PN_EXTERNAL_LEGAL_FACTS.bin  FLUSSO_STAMPA.PDZ.p7m )
+#while read -r line
+#do
+#  requestId=$( echo $line | sed -e 's/;.*//' )
+#  registeredLetterCode=$( echo $line | sed -e 's/[^;]*;//' | sed -e 's/;.*//' )
+#  prodType=$( echo $line | sed -e 's/[^;]*;[^;]*;//' | sed -e 's/;.*//' )
+#  dateTime=$( echo $line | sed -e 's/[^;]*;[^;]*;[^;]*;//' | sed -e 's/;.*//' )
+#  rnd=$( uuidgen | tr -d '-' )
+#
+#  echo "RequestId:$requestId code:$registeredLetterCode type:$prodType  on $dateTime"
+#  echo "${rnd}.pdf||15376371009|${requestId}|||${registeredLetterCode}||||1|" >> $bol_file
+#
+#  echo "" > ${tmp_dir}/testo.txt
+#  echo "RequestId:" >> ${tmp_dir}/testo.txt
+#  echo $requestId | sed -e 's/IUN.*//' | sed -e 's/^/  /' >> ${tmp_dir}/testo.txt
+#  echo $requestId | sed -e 's/.*IUN_/        IUN_/' >> ${tmp_dir}/testo.txt
+#
+#  echo "code:$registeredLetterCode" >> ${tmp_dir}/testo.txt
+#  echo "type:$prodType" >> ${tmp_dir}/testo.txt
+#  convert  TEXT:${tmp_dir}/testo.txt ${tmp_dir}/p7m_content/${rnd}.pdf
+#
+#done < <( cat $input_csv_path | sed 1d )
+#
+#( cd ${tmp_dir}/p7m_content/ && zip -r ../FLUSSO_STAMPA.PDZ.p7m * )
+#( cd ${tmp_dir}/ && zip -r ${tmp_dir}/PN_EXTERNAL_LEGAL_FACTS.bin  FLUSSO_STAMPA.PDZ.p7m )
 
 #exit 0
 cx=pn-test
@@ -63,8 +63,8 @@ cat << EOF > ${tmp_dir}/signedreq.json
   "status":"SAVED"
 }
 EOF
-
-   sum=$(cat ${tmp_dir}/PN_EXTERNAL_LEGAL_FACTS.bin| openssl dgst -binary -sha256 | openssl base64 -A)
+   bin_file=${script_dir}/FLUSSOSTAMPA_003_001_28_2801_AR_ORC400034f8.bin
+   sum=$(cat ${bin_file}| openssl dgst -binary -sha256 | openssl base64 -A)
    echo "- Checksum $sum"
 
    cmd=$(echo curl -s -H\"x-pagopa-safestorage-cx-id: ${cx}\" -H\"x-api-key: \" -H\"content-type: application/json\" -H\"x-checksum: SHA-256\" -H\"x-checksum-value: ${sum}\" -d@${tmp_dir}/signedreq.json -XPOST http://${api_endpoint}/safe-storage/v1/files )
@@ -91,7 +91,7 @@ echo Key:    ${key}
 curl -XPUT \
     -H"Content-type: application/octet-stream" \
     -H"x-amz-checksum-sha256: ${sum}" \
-   --upload-file ${tmp_dir}/PN_EXTERNAL_LEGAL_FACTS.bin  \
+   --upload-file ${bin_file} \
     -H"x-amz-meta-secret: ${secret}" \
        ${url}
 
