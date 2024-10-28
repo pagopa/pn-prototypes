@@ -74,11 +74,17 @@ create or replace temporary view kpiSla as
 		      filter(c.ec_metadata.event_list, e -> e.paperProg_statusCode=='CON018'),
 		        e ->  left(e.paperProg_statusDateTime, 16)
 		    ),-1) as accettazione_recapitista_statusDateTime,
+			----Inserimento colonna CON020
+			element_at(transform(
+		      filter(c.ec_metadata.event_list, e -> e.paperProg_statusCode=='CON020'),
+		        e ->  left(e.paperProg_statusDateTime, 16)
+		    ),-1) as affido_conservato_CON020_data,
+			----Inserimento nuovo stato 'PN999' e 'PN998'
 		    element_at(transform(
 		      filter(c.ec_metadata.event_list,
 		      	e -> e.paperProg_statusCode in ( 'RECRS001C', 'RECRS002A','RECRS002D','RECRN001A','RECRN002A','RECRN002D','RECAG001A','RECAG002A','RECAG003A','RECAG003D',
 		       									 'RECRS010', 'RECRN010', 'RECAG010',
-		       									 'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013',
+		       									 'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013', 'PN999', 'PN998',
 														 'RECRSI001', 'RECRI001', 'RECRSI005', 'RECRI005'
 		       								)
 		      ),
@@ -99,11 +105,12 @@ create or replace temporary view kpiSla as
 		        'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
 		      )
 		    ),-1) as  messaingiacenza,
+			----Inserimento nuovo stato 'PN999' e 'PN998'
 		    element_at(transform(
 		      filter(c.ec_metadata.event_list,
 		      	e -> e.paperProg_statusCode in ('RECRS001C','RECRS002A','RECRS002D','RECRN001A','RECRN002A','RECRN002D', 'RECAG001A','RECAG002A','RECAG003A','RECAG003D',
 		      									'RECRS003C','RECRS004A','RECRS005A','RECRN003A','RECRN004A','RECRN005A', 'RECAG005A','RECAG006A','RECAG007A','RECAG008A',
-		      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013',
+		      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013','PN999', 'PN998',
 														'RECRSI003C', 'RECRSI004A', 'RECRSI005', 'RECRI003A', 'RECRI004A', 'RECRI005'
 		      									)
 		      ),
@@ -114,11 +121,12 @@ create or replace temporary view kpiSla as
 		        'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
 		      )
 		    ),-1) as certificazione_recapito,
+			----Inserimento nuovo stato 'PN999' e 'PN998'
 		    element_at(transform(
 		      filter(c.ec_metadata.event_list,
 		      	e -> e.paperProg_statusCode in ('RECRS001C','RECRS002C','RECRS002F','RECRN001C','RECRN002C','RECRN002F', 'RECAG001C','RECAG002C','RECAG003C','RECAG003F',
 		      									'RECRS003C','RECRS004C','RECRS005C','RECRN003C','RECRN004C','RECRN005C', 'RECAG005C','RECAG006C','RECAG007C','RECAG008C',
-		      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013',
+		      									'RECRS006', 'RECRS013', 'RECRN006', 'RECRN013', 'RECAG004', 'RECAG013', 'PN999', 'PN998',
 														'RECRSI003C', 'RECRSI004C', 'RECRSI005', 'RECRI003C', 'RECRI004C', 'RECRI005'
 		      								    )
 		      ),
