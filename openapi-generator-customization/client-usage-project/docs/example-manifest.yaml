@@ -1,0 +1,28 @@
+
+
+templates:
+  - name: PECReceivedNotification
+    description: ''
+    version: "1.0.0"
+    src:
+      it: "./templateXit.mjml"
+      de: "./templateXde.mjml"
+    lang:
+      it: "./templateXit.html"
+      de: "./templateXde.html"
+    properties:
+      notification:
+        type: object
+        properties:
+          foo:
+            type: string
+          bar:
+            type: integer
+          baz:
+            type: boolean
+      recipientName:
+        type: string
+      taxId:
+        $ref: ./example-manifest-commons.yaml#/definitions/taxId
+    # EMAIL | PDF | STRING
+    format: EMAIL

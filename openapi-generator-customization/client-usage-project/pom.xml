@@ -1,0 +1,174 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>it.pagopa.pn.project</groupId>
+  <artifactId>template-client-example</artifactId>
+  <packaging>jar</packaging>
+  <name>Progetto che usa i template</name>
+  <version>0.0.1</version>
+  <description>OpenAPI Java</description>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <configuration>
+              <mainClass>it.pagopa.pn.tools.customspec.TemplateManifest2OpenAPI</mainClass>
+              <systemProperties>
+                <projectProperties />
+                <systemProperty>
+                  <key>fromFile</key>
+                  <value>${project.basedir}/docs/example-manifest.yaml</value>
+                </systemProperty>
+                <systemProperty>
+                  <key>toFile</key>
+                  <value>${project.basedir}/target/docs/example-template.yaml</value>
+                </systemProperty>
+              </systemProperties>
+            </configuration>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>5.4.0</version>
+        <executions>
+          <execution>
+            <id>generate-client-code</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <generatorName>template-client-gen</generatorName>
+              <inputSpec>${project.basedir}/target/docs/example-template.yaml</inputSpec>
+              <apiPackage>it.pagopa.pn.template.client</apiPackage>
+              <modelPackage>it.pagopa.pn.template.client.model</modelPackage>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>template-client-gen-openapi-generator</artifactId>
+            <version>1.0.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+                <fork>true</fork>
+                <meminitial>128m</meminitial>
+                <maxmem>512m</maxmem>
+                <compilerArgs>
+                    <arg>-Xlint:all</arg>
+                    <arg>-J-Xss4m</arg><!-- Compiling the generated JSON.java file may require larger stack size. -->
+                </compilerArgs>
+            </configuration>
+        </plugin>
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.5.1</version>
+            <configuration>
+                <systemPropertyVariables>
+                    <property>
+                        <name>loggerPath</name>
+                        <value>conf/log4j.properties</value>
+                    </property>
+                </systemPropertyVariables>
+                <argLine>-Xms512m -Xmx1500m</argLine>
+                <parallel>methods</parallel>
+                <forkMode>pertest</forkMode>
+            </configuration>
+            <dependencies>
+                <!--Custom provider and engine for Junit 5 to surefire-->
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter-engine</artifactId>
+                    <version>${junit-version}</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <version>2.7.7</version>
+  </dependency>
+
+    <!-- @Nullable annotation -->
+    <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.2</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.springframework/spring-core -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+      <version>5.3.39</version>
+    </dependency>
+
+    <dependency>
+      <groupId>it.pagopa.pn.commons</groupId>
+      <artifactId>template-engine</artifactId>
+      <version>0.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>${jakarta-annotation-version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <version>2.7.7</version>
+      <scope>test</scope>
+      <exclusions>
+          <exclusion>
+              <groupId>junit</groupId>
+              <artifactId>junit</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-version}</version>
+    </dependency>
+  </dependencies>
+  <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <jersey-version>1.19.4</jersey-version>
+      <jackson-version>2.17.1</jackson-version>
+      <jackson-databind-version>2.17.1</jackson-databind-version>
+      <jakarta-annotation-version>1.3.5</jakarta-annotation-version>
+      <beanvalidation-version>2.0.2</beanvalidation-version>
+      <maven-plugin-version>1.0.0</maven-plugin-version>
+      <junit-version>5.10.2</junit-version>
+      <junit-platform-runner.version>1.10.0</junit-platform-runner.version>
+  </properties>
+</project>
