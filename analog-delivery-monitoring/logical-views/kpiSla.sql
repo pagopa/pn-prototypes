@@ -78,7 +78,12 @@ create or replace temporary view kpiSla as
 			element_at(transform(
 		      filter(c.ec_metadata.event_list, e -> e.paperProg_statusCode=='CON020'),
 		        e ->  left(e.paperProg_statusDateTime, 16)
-		    ),-1) as affido_conservato_CON020_data,
+		    ),-1) as affido_conservato_CON020_statusDateTime,
+	             ----Inserimento colonna CON09A
+			element_at(transform(
+		      filter(c.ec_metadata.event_list, e -> e.paperProg_statusCode=='CON09A'),
+		        e ->  left(e.paperProg_statusDateTime, 16)
+		    ),-1) as materialita_pronta_CON09A_statusDateTime,
 			----Inserimento nuovo stato 'PN999' e 'PN998'
 		    element_at(transform(
 		      filter(c.ec_metadata.event_list,
@@ -176,6 +181,8 @@ create or replace temporary view kpiSla as
 		from_utc_timestamp(stampa_imbustamento_statusDateTime, "CET") AS stampa_imbustamento_CON080_data,
 		from_utc_timestamp(affido_recapitista_statusDateTime, "CET") AS affido_recapitista_CON016_data,
 		from_utc_timestamp(accettazione_recapitista_statusDateTime, "CET") AS accettazione_recapitista_CON018_data,
+	        from_utc_timestamp(affido_conservato_CON020_statusDateTime, "CET") AS affido_conservato_CON020_data,
+	        from_utc_timestamp(materialita_pronta_CON09A_statusDateTime, "CET") AS materialita_pronta_CON09A_data,
 		scarto_consolidatore.statusCode AS scarto_consolidatore_stato,
 		from_utc_timestamp(scarto_consolidatore.statusDateTime, "CET") AS scarto_consolidatore_data,
 		tentativo_recapito.statusCode AS tentativo_recapito_stato,
