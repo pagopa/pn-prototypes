@@ -84,7 +84,7 @@ create or replace temporary view kpiSla as
 		      filter(c.ec_metadata.event_list, e -> e.paperProg_statusCode=='CON09A'),
 		        e ->  left(e.paperProg_statusDateTime, 16)
 		    ),-1) as materialita_pronta_CON09A_statusDateTime,
-			----Inserimento nuovo stato 'PN999' e 'PN998'
+		    ----Inserimento nuovo stato 'PN999' e 'PN998'
 		    element_at(transform(
 		      filter(c.ec_metadata.event_list,
 		      	e -> e.paperProg_statusCode in ( 'RECRS001C', 'RECRS002A','RECRS002D','RECRN001A','RECRN002A','RECRN002D','RECAG001A','RECAG002A','RECAG003A','RECAG003D',
@@ -126,7 +126,7 @@ create or replace temporary view kpiSla as
 		        'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
 		      )
 		    ),-1) as certificazione_recapito,
-			----Inserimento nuovo stato 'PN999' e 'PN998'
+		    ----Inserimento nuovo stato 'PN999' e 'PN998'
 		    element_at(transform(
 		      filter(c.ec_metadata.event_list,
 		      	e -> e.paperProg_statusCode in ('RECRS001C','RECRS002C','RECRS002F','RECRN001C','RECRN002C','RECRN002F', 'RECAG001C','RECAG002C','RECAG003C','RECAG003F',
@@ -159,7 +159,19 @@ create or replace temporary view kpiSla as
 		        'statusDateTime', left(e.paperProg_statusDateTime, 16),
 		        'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
 		      )
-		    ),-1) as demat_23L
+		    ),-1) as demat_23L,
+	            ---aggiunta della causa_forza_maggiore
+	            element_at(transform(
+		      filter(c.ec_metadata.event_list,
+			e -> e.paperProg_statusCode in ('RECAG015', 'RECRS015', 'RECRN015' )
+		      ),
+		      e -> named_struct(
+			'statusCode', e.paperProg_statusCode,
+			'deliveryFailureCause', e.paperProg_deliveryFailureCause,
+			'statusDateTime', left(e.paperProg_statusDateTime, 16),
+			'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
+		      )
+		     ),-1) as causa_forza_maggiore
 		FROM completeUpdatedEcMetadata c
 		WHERE c.ec_metadata.paperMeta_productType IN ('890', 'AR', 'RS', 'RIS', 'RIR' )
 	) SELECT
@@ -202,7 +214,11 @@ create or replace temporary view kpiSla as
 		from_utc_timestamp(accettazione_23L.rendicontazioneDateTime, "CET") AS accettazione_23L_RECAG012_data_rendicontazione,
 		demat_23L.statusCode AS demat_23L_stato,
 		from_utc_timestamp(demat_23L.statusDateTime, "CET") AS demat_23L_data,
-		from_utc_timestamp(demat_23L.rendicontazioneDateTime, "CET") AS demat_23L_data_rendicontazione
+		from_utc_timestamp(demat_23L.rendicontazioneDateTime, "CET") AS demat_23L_data_rendicontazione,
+		causa_forza_maggiore.statusCode AS causa_forza_maggiore_stato,
+        	causa_forza_maggiore.deliveryFailureCause AS causa_forza_maggiore_dettagli,
+		from_utc_timestamp(causa_forza_maggiore.statusDateTime, "CET") AS causa_forza_maggiore_data,
+        	from_utc_timestamp(causa_forza_maggiore.rendicontazioneDateTime, "CET") AS causa_forza_maggiore_data_rendicontazione
 	FROM
 		kpi
 ;
