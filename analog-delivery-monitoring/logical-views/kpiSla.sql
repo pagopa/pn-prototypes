@@ -166,7 +166,6 @@ create or replace temporary view kpiSla as
 			e -> e.paperProg_statusCode in ('RECAG015', 'RECRS015', 'RECRN015' )
 		      ),
 		      e -> named_struct(
-			'statusCode', e.paperProg_statusCode,
 			'deliveryFailureCause', e.paperProg_deliveryFailureCause,
 			'statusDateTime', left(e.paperProg_statusDateTime, 16),
 			'rendicontazioneDateTime', left(e.paperProg_clientRequestTimeStamp, 16)
@@ -215,7 +214,6 @@ create or replace temporary view kpiSla as
 		demat_23L.statusCode AS demat_23L_stato,
 		from_utc_timestamp(demat_23L.statusDateTime, "CET") AS demat_23L_data,
 		from_utc_timestamp(demat_23L.rendicontazioneDateTime, "CET") AS demat_23L_data_rendicontazione,
-		causa_forza_maggiore.statusCode AS causa_forza_maggiore_stato,
         	causa_forza_maggiore.deliveryFailureCause AS causa_forza_maggiore_dettagli,
 		from_utc_timestamp(causa_forza_maggiore.statusDateTime, "CET") AS causa_forza_maggiore_data,
         	from_utc_timestamp(causa_forza_maggiore.rendicontazioneDateTime, "CET") AS causa_forza_maggiore_data_rendicontazione
