@@ -17,15 +17,30 @@ OPTIONS (
 /*
 $QueryMetadata
 {
-    "name": "matrice_costi_2024",
+    "name": "matrice_costi_202408",
     "persist": false,
     "dependencies": []
 }
 */
-CREATE OR REPLACE TEMPORARY VIEW matrice_costi_2024
+CREATE OR REPLACE TEMPORARY VIEW matrice_costi_202408
 USING csv
 OPTIONS (
   path "s3a://${CORE_BUCKET}/external/matrice_costi/matrice_costi_202408_pivot_v202411.csv.gz",
+  header true
+);
+
+/*
+$QueryMetadata
+{
+    "name": "matrice_costi_202412",
+    "persist": false,
+    "dependencies": []
+}
+*/
+CREATE OR REPLACE TEMPORARY VIEW matrice_costi_202412
+USING csv
+OPTIONS (
+  path   "s3://${CORE_BUCKET}/external/matrice_costi/matrice_costi_20241216_pivot.csv.gz",
   header true
 );
 
@@ -41,14 +56,40 @@ $QueryMetadata
             "location": "analog-delivery-monitoring/source-views/matriceCostiPivot.sql"
         },
         {
-            "name": "matrice_costi_2024",
+            "name": "matrice_costi_202408",
+            "location": "analog-delivery-monitoring/source-views/matriceCostiPivot.sql"
+        },
+        {
+            "name": "matrice_costi_202412",
             "location": "analog-delivery-monitoring/source-views/matriceCostiPivot.sql"
         }
     ]
 }
 */
 CREATE OR REPLACE TEMPORARY VIEW matrice_costi AS (
-	SELECT *, '1970-01-01T00:00:00.000Z' AS startDate, '2024-07-31T21:59:59.999Z' AS endDate, 'matrice_costi_2023' AS tenderVersion FROM matrice_costi_2023
+	SELECT  *, 
+            '1970-01-01T00:00:00.000Z' AS startDate, 
+            '2024-07-31T21:59:59.999Z' AS endDate, 
+            'matrice_costi_2023' AS tenderVersion 
+        FROM matrice_costi_2023
  	UNION ALL
- 	SELECT *, 'matrice_costi_2024' AS tenderVersion FROM matrice_costi_2024
+ 	SELECT  geokey, 
+            product, 
+            recapitista, 
+            lotto, 
+            costo_plico, 
+            costo_foglio, 
+            costo_demat, 
+            min, 
+            max, 
+            costo, 
+            costo_base_20gr, 
+            startDate,
+            '2024-12-16T07:59:59.999Z' AS endDate, 
+            'matrice_costi_202408' AS tenderVersion 
+        FROM matrice_costi_202408
+    UNION ALL
+    SELECT  *, 
+            'matrice_costi_202412' AS tenderVersion 
+        FROM matrice_costi_202412
 );
