@@ -43,7 +43,7 @@ WHERE
       dynamoExportName 
     ==
       date_format(
-        date_sub( now(), 1),
+        date_sub( to_timestamp('${timestamp.utc}', "yyyy-MM-dd'T'HH:mm:ssX"), 1),
         "'inc_export_'yyyyMMdd"
       )
 ;
