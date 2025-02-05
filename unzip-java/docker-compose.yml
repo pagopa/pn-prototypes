@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  unzipjava:
+    image: unzip-java:1.0-SNAPSHOT
+    build:
+      dockerfile: Dockerfile
+    container_name: unzip-java
+    volumes:
+      - ~/Downloads/Archivio.zip:/app/test.zip # sostituisci ~/Downloads/Archivio.zip
+      - ~/Downloads/output:/app/output # sostituisci ~/Downloads/output
+    command: ["test.zip", "output"]
