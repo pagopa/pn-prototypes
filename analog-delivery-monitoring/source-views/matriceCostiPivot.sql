@@ -44,6 +44,22 @@ OPTIONS (
   header true
 );
 
+/*
+$QueryMetadata
+{
+    "name": "matrice_costi_202502",
+    "persist": false,
+    "dependencies": []
+}
+*/
+CREATE OR REPLACE TEMPORARY VIEW matrice_costi_202502
+USING csv
+OPTIONS (
+  path   "s3a://${CORE_BUCKET}/external/matrice_costi/matrice_costi_20250201_pivot.csv.gz",
+  delimiter ";",
+  header true
+);
+
 
 /*
 $QueryMetadata
@@ -61,6 +77,10 @@ $QueryMetadata
         },
         {
             "name": "matrice_costi_202412",
+            "location": "analog-delivery-monitoring/source-views/matriceCostiPivot.sql"
+        },
+        {
+            "name": "matrice_costi_202502",
             "location": "analog-delivery-monitoring/source-views/matriceCostiPivot.sql"
         }
     ]
@@ -89,7 +109,35 @@ CREATE OR REPLACE TEMPORARY VIEW matrice_costi AS (
             'matrice_costi_202408' AS tenderVersion 
         FROM matrice_costi_202408
     UNION ALL
-    SELECT  *, 
+    SELECT  geokey, 
+            product, 
+            recapitista, 
+            lotto, 
+            costo_plico, 
+            costo_foglio, 
+            costo_demat, 
+            min, 
+            max, 
+            costo, 
+            costo_base_20gr, 
+            startDate,
+            '2025-01-31T22:59:59.999Z' AS endDate,  
             'matrice_costi_202412' AS tenderVersion 
         FROM matrice_costi_202412
+    UNION ALL
+    SELECT  geokey, 
+            product, 
+            recapitista, 
+            lotto, 
+            costo_plico, 
+            costo_foglio, 
+            costo_demat, 
+            min, 
+            max, 
+            costo, 
+            costo_base_20gr, 
+            startDate,
+            endDate,
+            'matrice_costi_202502' AS tenderVersion 
+        FROM matrice_costi_202502
 );
