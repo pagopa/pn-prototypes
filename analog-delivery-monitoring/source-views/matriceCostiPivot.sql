@@ -76,6 +76,7 @@ OPTIONS (
   header true
 );
 
+
 /*
 $QueryMetadata
 {
@@ -118,6 +119,7 @@ $QueryMetadata
         {
             "name": "matrice_costi_202504",
             "location": "analog-delivery-monitoring/source-views/matriceCostiPivot.sql"
+
         },
         {
             "name": "matrice_costi_202506",
@@ -193,6 +195,7 @@ CREATE OR REPLACE TEMPORARY VIEW matrice_costi AS (
             costo, 
             costo_base_20gr, 
             startDate,
+
             '2025-06-15T21:59:59.999Z' AS endDate,
             'matrice_costi_202504' AS tenderVersion 
         FROM matrice_costi_202504
